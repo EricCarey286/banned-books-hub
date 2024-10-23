@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+      "target": "ESNext",          // Use ESNext or ES6
+      "module": "CommonJS",       // CommonJS is necessary for Node.js
+      "strict": true,              // Enable strict type checking
+      "esModuleInterop": true,     // Enables emit interoperability between CommonJS and ES Modules
+      "skipLibCheck": true,        // Skip type checking of declaration files
+      "forceConsistentCasingInFileNames": true, // Ensure file names are consistent
+      "rootDir": "./src" 
+    },
+    "include": [
+      "src/**/**/*" ,                  // Adjust according to your project structure
+      "src/app.ts"    
+      ],
+    "exclude": [
+      "node_modules"
+    ]
+}
