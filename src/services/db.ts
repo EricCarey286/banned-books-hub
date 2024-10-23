@@ -8,6 +8,7 @@ export default async function query(sql: any, params: any) {
       ...DB_CONFIG.db,
       authPlugins: {
         caching_sha2_password: mysql.authPlugins.caching_sha2_password({
+          //fix sha2
           serverPublicKey: process.env.PUBLIC_KEY,
           overrideIsSecure: true,
         }),
