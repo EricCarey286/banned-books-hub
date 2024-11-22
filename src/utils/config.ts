@@ -10,13 +10,6 @@ export const DB_CONFIG = {
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : undefined,
-      ssl: {
-        rejectUnauthorized: true,
-        // Enable automatic retrieval of the server's public key
-        publicKeyRetrieval: true,
-      },
-      connectTimeout: 60000,
-      multipleStatements: true,
     },
     listPerPage: 10,
   };

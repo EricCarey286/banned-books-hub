@@ -44,8 +44,19 @@ router.get('/search', async function(req: Request, res: Response, next: NextFunc
 
 //create a book entry
 router.post('/', async function(req: Request, res: Response, next: NextFunction) {
+  const booksArray = req.body;
+  const results: any[] = []; // To collect results for all books
+
   try {
-    res.json(await books.create(req.body));
+    for (const book of booksArray) {
+      const result = await books.create(book);
+      results.push(result); // Collect the result for each book
+    }
+
+    res.status(200).json({
+      message: 'Books inserted successfully',
+      results, 
+    });
   } catch (err: any) {
     console.error(`Error while creating a new book entry`, err.message);
     next(err);

@@ -2,21 +2,11 @@ import mysql from "mysql2/promise";
 import { DB_CONFIG } from "../utils/config";
 require("dotenv").config();
 
+const pool = mysql.createPool(DB_CONFIG.db);
+
 export default async function query(sql: any, params: any) {
   try {
-    const connection = await mysql.createConnection({
-      ...DB_CONFIG.db,
-      authPlugins: {
-        caching_sha2_password: mysql.authPlugins.caching_sha2_password({
-          //fix sha2
-          serverPublicKey: process.env.PUBLIC_KEY,
-          overrideIsSecure: true,
-        }),
-      },
-    });
-    const [results] = await connection.execute(sql, params);
-
-    console.log("Database configuration:", connection);
+    const [results] = await pool.execute(sql, params);
 
     return Array.isArray(results) ? results : [results];
   } catch (error) {
