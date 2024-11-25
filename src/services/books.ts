@@ -1,4 +1,4 @@
-import mysql from 'mysql2/promise'; 
+import mysql from 'mysql2/promise';
 import query from "./db";
 import { getOffset, emptyOrRows, AppError } from "../utils/helper";
 import { DB_CONFIG } from "../utils/config";
@@ -60,35 +60,32 @@ export async function getBook(searchTerm: string) {
 //create a book
 export async function create(book: Book) {
   let invalidFields: any = [];
-  let inputError = false;
+
   try {
     if (!book.isbn || typeof book.isbn !== "string" || book.isbn.trim().length === 0) {
       invalidFields.push('isbn');
-      inputError = true;
     }
     if (!book.title || typeof book.title !== "string" || book.title.trim().length === 0) {
       invalidFields.push('title')
-      inputError = true;
     }
     if (!book.author || typeof book.author !== "string" || book.author.trim().length === 0) {
       invalidFields.push('author');
-      inputError = true;
     }
     if (!book.banned_by && typeof book.banned_by !== "string" || book.banned_by.trim().length === 0) {
       invalidFields.push('banned_by');
-      inputError = true;
     }
     if (book.description !== undefined && typeof book.description !== "string") {
       invalidFields.push('description');
-      inputError = true;
     }
     if (book.ban_reason !== undefined && typeof book.ban_reason !== "string") {
       invalidFields.push('ban_reason');
-      inputError = true;
     }
 
-    if(inputError){
-      throw new AppError(`Invalid request. Missing or invalid input fields: ${invalidFields}`, 501);
+    if (invalidFields.length > 0) {
+      throw new AppError("Validation failed", 501, {
+        details: "Required fields are missing or of invalid format.",
+        invalidFields: invalidFields,
+      });
     }
 
     const result = await query("CALL sp_insert_book(?, ?, ?, ?, ?, ?)", [
@@ -106,6 +103,10 @@ export async function create(book: Book) {
 
     if (affectedRows) {
       message = `New book: ${book.title} created successfully`;
+    } else {
+      throw new AppError("Creation failed", 501,{
+        details: 'Book failed to create in database',
+      });
     }
 
     return { message };
@@ -117,19 +118,49 @@ export async function create(book: Book) {
 
 //update an existing book by id
 export async function update(id: Number, book: Book) {
-   // Validate the input: ensure at least one field is provided
-   if (!book.title && !book.author && !book.description && !book.ban_reason && !book.banned_by) {
-    throw new AppError("At least one field (title, author, or description) must be provided to update.", 501);
-  }
-
-  // Assign `null` to missing fields to satisfy the stored procedure requirements
-  const title = book.title || null;
-  const author = book.author || null;
-  const description = book.description || null;
-  const ban_reason = book.ban_reason || null;
-  const banned_by = book.banned_by || null;
-
   try {
+    // Validate the input: ensure at least one field is provided
+    if (!book.title && !book.author && !book.description && !book.ban_reason && !book.banned_by) {
+      throw new AppError("At least one field must be provided to update.", 501, {
+        validFields: ['title', 'author', 'description', 'ban_reason', 'banned_by'],
+      });
+    }
+
+    const errors: string[] = [];
+
+    if (book.title && (typeof book.title !== 'string' || book.title.trim().length === 0)) {
+      errors.push('Title must be a non-empty string.');
+    }
+
+    if (book.author && (typeof book.author !== 'string' || book.author.trim().length === 0)) {
+      errors.push('Author must be a non-empty string.');
+    }
+
+    if (book.description && (typeof book.description !== 'string' || book.description.trim().length === 0)) {
+      errors.push('Description must be anon-empty string.');
+    }
+
+    if (book.ban_reason && (typeof book.ban_reason !== 'string' || book.ban_reason.trim().length === 0)) {
+      errors.push('Ban reason must be a non-empty string.');
+    }
+
+    if (book.banned_by && (typeof book.banned_by !== 'string' || book.banned_by.trim().length === 0)) {
+      errors.push('Banned by must be a non-empty string.');
+    }
+
+    if (errors.length > 0) {
+      throw new AppError('Validation Failed', 501, {
+        details: errors,
+      })
+    }
+
+    // Assign `null` to missing fields to satisfy the stored procedure requirements
+    const title = book.title || null;
+    const author = book.author || null;
+    const description = book.description || null;
+    const ban_reason = book.ban_reason || null;
+    const banned_by = book.banned_by || null;
+
     const result = await query("CALL sp_update_book(?, ?, ?, ?, ?, ?)", [
       id,
       title,
@@ -145,11 +176,12 @@ export async function update(id: Number, book: Book) {
 
     if (affectedRows) {
       message = `Book with id: ${id} updated successfully`;
+      return { message };
     } else {
-      throw new AppError(`Error updating book with id: ${id}`, 501);
+      throw new AppError(`Error updating book with id: ${id}`, 501, {
+        details: 'Query failed to update an existing book'
+      });
     }
-
-    return { message };
   } catch (err: any) {
     console.error("Error in update:", err);
     throw err;
@@ -161,16 +193,17 @@ export async function remove(id: Number) {
   try {
     const result = await query("CALL sp_delete_book(?)", [id]);
 
-    let message = `Error in deleting book with id: ${id}`;
+    let message = '';
 
     const affectedRows = (result[0] as mysql.ResultSetHeader).affectedRows || 0;
-  
 
     if (affectedRows) {
       message = `Book with id: ${id} deleted successfully`;
+      return { message };
+    } else {
+      throw new AppError(`Error deleting book with id: ${id}`, 501);
     }
 
-    return { message };
   } catch (err: any) {
     console.error("Error in remove:", err);
     throw err;
