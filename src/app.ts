@@ -48,7 +48,6 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
   const errorResponse = {
     message: err.message,
     details: err.details || null,
-    stack: err.stack
   };
 
   console.error("Error details: ", errorResponse);
