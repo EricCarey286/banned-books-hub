@@ -3,18 +3,7 @@ const router = expressRouter.Router();
 import * as books from '../services/books';
 
 import { Request, Response, NextFunction } from 'express';
-
-class AppError extends Error {
-  statusCode: number;
-
-  constructor(message: string, statusCode: number) {
-      super(message);
-      this.statusCode = statusCode;
-
-      // Maintain proper stack trace
-      Error.captureStackTrace(this, this.constructor);
-  }
-}
+import { AppError } from '../utils/helper';
 
 //get all books
 router.get('/', async function(req: Request, res: Response, next: NextFunction) {
@@ -82,6 +71,7 @@ router.put('/:id', async function(req: Request, res: Response, next: NextFunctio
 
     if(!title && !author && !description && !ban_reason && !banned_by){
       errors.push('At least one field must be provided with a valid string.');
+      errors.push('Valid fields to edit: title, author, description, ban_reason, banned_by')
       return res.status(400).json({ errors });
     }
 
