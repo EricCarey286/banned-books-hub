@@ -1,5 +1,6 @@
 const https = require("https");
-import fs from "fs"; // File system to read SSL certificate files
+import fs from "fs";
+import cors from "cors";
 import express from "express";
 const app = express();
 import helmet from "helmet";
@@ -22,10 +23,16 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
 });
-app.use(limiter);
 
-//helmet for security middleware
-app.use(helmet())
+const corsOptions = {
+  origin: "http://localhost:3000", //TODO: update to frontend domain (for production)
+  methods: "GET,POST,PUT,DELETE",
+  credentials: true,
+};
+
+app.use(limiter);
+app.use(helmet()); //helmet for security middleware
+app.use(cors()); //TODO: switch to (corsOptions)
 
 
 app.get("/", (req: Request, res: Response) => {
@@ -41,10 +48,6 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
   res.status(statusCode).json({ message: err.message });
   return;
 });
-
-// app.listen(PORT, () => {
-//   console.log(`Listening at http://localhost:${PORT}`);
-// });
 
 // HTTPS Server Configuration
 const sslOptions = {
