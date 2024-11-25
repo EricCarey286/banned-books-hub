@@ -44,8 +44,15 @@ app.use("/books", booksRouter);
 /* Error handler middleware */
 app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
   const statusCode = err.statusCode || 500;
-  console.error(err.message, err.stack);
-  res.status(statusCode).json({ message: err.message });
+
+  const errorResponse = {
+    message: err.message,
+    details: err.details || null,
+    stack: err.stack
+  };
+
+  console.error("Error details: ", errorResponse);
+  res.status(statusCode).json(errorResponse);
   return;
 });
 

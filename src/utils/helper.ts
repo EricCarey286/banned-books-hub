@@ -10,10 +10,12 @@ export function emptyOrRows(rows: any[]): any[] {
 }
 export class AppError extends Error {
   statusCode: number;
+  details?: Record<string, any>;
 
-  constructor(message: string, statusCode: number) {
+  constructor(message: string, statusCode: number, details?: Record<string, any>) {
       super(message);
       this.statusCode = statusCode;
+      this.details = details;
 
       // Maintain proper stack trace
       Error.captureStackTrace(this, this.constructor);
