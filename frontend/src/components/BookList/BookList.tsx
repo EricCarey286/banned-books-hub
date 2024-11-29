@@ -42,7 +42,7 @@ export default function BooksList() {
 
     return (
         <div>
-            <h1>Banned Books Hub</h1>
+            <h3>Banned Books</h3>
             {myError ? (
                 <p style={{ color: "red" }}>Error: {myError}</p>
             ) : (
