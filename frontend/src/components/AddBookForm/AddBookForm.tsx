@@ -1,18 +1,11 @@
 import React, { useState } from "react";
-import './AddBookForm.css';
+import "./AddBookForm.css"; // Import the CSS file
 
 interface BookFormProps {
-  onSubmit: (book: {
-    isbn: string;
-    title: string;
-    author: string;
-    description: string;
-    ban_reason: string;
-    banned_by: string;
-  }) => void;
+  apiUrl: string; // The base URL of your backend API
 }
 
-const AddBookForm: React.FC<BookFormProps> = ({ onSubmit }) => {
+const AddBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
   const [formData, setFormData] = useState({
     isbn: "",
     title: "",
@@ -23,40 +16,56 @@ const AddBookForm: React.FC<BookFormProps> = ({ onSubmit }) => {
   });
 
   const [errors, setErrors] = useState<string[]>([]);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const validateForm = () => {
     const newErrors: string[] = [];
 
-    // Check for empty fields
     Object.entries(formData).forEach(([key, value]) => {
       if (!value.trim()) {
         newErrors.push(`${key.replace("_", " ")} is required`);
       }
     });
 
-    // Validate ISBN
     if (formData.isbn && !/^\d{10}$/.test(formData.isbn)) {
       newErrors.push("ISBN must be a valid 10-digit number");
     }
 
     setErrors(newErrors);
-    return newErrors.length === 0; // Return true if no errors
+    return newErrors.length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (validateForm()) {
-      onSubmit(formData);
-      setFormData({
-        isbn: "",
-        title: "",
-        author: "",
-        description: "",
-        ban_reason: "",
-        banned_by: "",
-      });
-      setErrors([]); // Clear errors after successful submission
+      try {
+        const response = await fetch(`${apiUrl}/books`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify([formData]),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          setErrors([errorData.message || "Failed to update book."]);
+        } else {
+          setSuccessMessage(`Book "${formData.title}" has been successfully updated.`);
+          setFormData({
+            isbn: "",
+            title: "",
+            author: "",
+            description: "",
+            ban_reason: "",
+            banned_by: "",
+          });
+          setErrors([]);
+        }
+      } catch (err) {
+        setErrors([`An unexpected error occurred: ${err}. Please try again later.`]);
+      }
     }
   };
 
@@ -71,64 +80,76 @@ const AddBookForm: React.FC<BookFormProps> = ({ onSubmit }) => {
   return (
     <div className="form-container">
       <form onSubmit={handleSubmit} className="book-form">
-        <h2 className="form-title">Add a New Book</h2>
+        <h2 className="form-title">Add a Book</h2>
+
         <div className="form-group">
-          <label>ISBN:</label>
+          <label htmlFor="isbn">ISBN:</label>
           <input
             type="text"
             name="isbn"
+            id="isbn"
             value={formData.isbn}
             onChange={handleChange}
           />
         </div>
+
         <div className="form-group">
-          <label>Title:</label>
+          <label htmlFor="title">Title:</label>
           <input
             type="text"
             name="title"
+            id="title"
             value={formData.title}
             onChange={handleChange}
           />
         </div>
+
         <div className="form-group">
-          <label>Author:</label>
+          <label htmlFor="author">Author:</label>
           <input
             type="text"
             name="author"
+            id="author"
             value={formData.author}
             onChange={handleChange}
           />
         </div>
+
         <div className="form-group">
-          <label>Description:</label>
+          <label htmlFor="description">Description:</label>
           <textarea
             name="description"
+            id="description"
             value={formData.description}
             onChange={handleChange}
-          />
+          ></textarea>
         </div>
+
         <div className="form-group">
-          <label>Ban Reason:</label>
+          <label htmlFor="ban_reason">Ban Reason:</label>
           <input
             type="text"
             name="ban_reason"
+            id="ban_reason"
             value={formData.ban_reason}
             onChange={handleChange}
           />
         </div>
+
         <div className="form-group">
-          <label>Banned By:</label>
+          <label htmlFor="banned_by">Banned By:</label>
           <input
             type="text"
             name="banned_by"
+            id="banned_by"
             value={formData.banned_by}
             onChange={handleChange}
           />
         </div>
+
         <button type="submit" className="submit-button">Submit</button>
       </form>
 
-      {/* Error Messages */}
       {errors.length > 0 && (
         <div className="error-messages">
           <strong>The following errors occurred:</strong>
@@ -137,6 +158,12 @@ const AddBookForm: React.FC<BookFormProps> = ({ onSubmit }) => {
               <li key={index}>{error}</li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="success-message">
+          {successMessage}
         </div>
       )}
     </div>
