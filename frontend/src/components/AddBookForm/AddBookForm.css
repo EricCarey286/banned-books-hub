@@ -33,6 +33,7 @@
   }
   
   input,
+  select,
   textarea {
     padding: 10px;
     font-size: 1rem;
@@ -48,6 +49,7 @@
   }
   
   input:focus,
+  select:focus,
   textarea:focus {
     border-color: #007bff;
     outline: none;

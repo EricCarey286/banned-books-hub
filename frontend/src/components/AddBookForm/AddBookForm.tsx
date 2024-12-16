@@ -7,6 +7,7 @@ interface BookFormProps {
 
 const AddBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
   const [formData, setFormData] = useState({
+    action: "",
     isbn: "",
     title: "",
     author: "",
@@ -20,13 +21,14 @@ const AddBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
 
   const validateForm = () => {
     const newErrors: string[] = [];
-
-    Object.entries(formData).forEach(([key, value]) => {
-      if (!value.trim()) {
-        newErrors.push(`${key.replace("_", " ")} is required`);
-      }
-    });
-
+    if(formData.action !== "update" && formData.action !== "delete"){
+      Object.entries(formData).forEach(([key, value]) => {
+        if (!value.trim()) {
+          newErrors.push(`${key.replace("_", " ")} is required`);
+        }
+      });
+    }
+  
     if (formData.isbn && !/^\d{10}$/.test(formData.isbn)) {
       newErrors.push("ISBN must be a valid 10-digit number");
     }
@@ -40,13 +42,35 @@ const AddBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
 
     if (validateForm()) {
       try {
-        const response = await fetch(`${apiUrl}/books`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify([formData]),
-        });
+        let response;
+        switch (formData.action) {
+          case "add":
+            response = await fetch(`${apiUrl}/books`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify([formData]),
+            });
+            break;
+          case "delete":
+            response = await fetch(`https://localhost:3000/books/${formData.isbn}`, {
+              method: "DELETE",
+            });
+            break;
+          case "update":
+            response = await fetch(`https://localhost:3000/books/${formData.isbn}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(formData),
+            });
+            break;
+          default:
+            setErrors(["Invalid action."]);
+            return;
+        }
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -54,6 +78,7 @@ const AddBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
         } else {
           setSuccessMessage(`Book "${formData.title}" has been successfully updated.`);
           setFormData({
+            action: "",
             isbn: "",
             title: "",
             author: "",
@@ -69,7 +94,7 @@ const AddBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -83,70 +108,88 @@ const AddBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
         <h2 className="form-title">Add a Book</h2>
 
         <div className="form-group">
-          <label htmlFor="isbn">ISBN:</label>
-          <input
-            type="text"
-            name="isbn"
-            id="isbn"
-            value={formData.isbn}
+          <label htmlFor="action">What do you want to do?</label>
+          <select
+            name="action"
+            id="action"
+            value={formData.action}
             onChange={handleChange}
-          />
+          ><option value="" disabled>
+              -- Select an Action --
+            </option>
+            <option value="add">
+              Add
+            </option>
+            <option value="update">
+              Update
+            </option>
+            <option value="delete">
+              Delete
+            </option></select>
         </div>
-
         <div className="form-group">
-          <label htmlFor="title">Title:</label>
-          <input
-            type="text"
-            name="title"
-            id="title"
-            value={formData.title}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="author">Author:</label>
-          <input
-            type="text"
-            name="author"
-            id="author"
-            value={formData.author}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="description">Description:</label>
-          <textarea
-            name="description"
-            id="description"
-            value={formData.description}
-            onChange={handleChange}
-          ></textarea>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="ban_reason">Ban Reason:</label>
-          <input
-            type="text"
-            name="ban_reason"
-            id="ban_reason"
-            value={formData.ban_reason}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="banned_by">Banned By:</label>
-          <input
-            type="text"
-            name="banned_by"
-            id="banned_by"
-            value={formData.banned_by}
-            onChange={handleChange}
-          />
-        </div>
-
+              <label htmlFor="isbn">ISBN:</label>
+              <input
+                type="text"
+                name="isbn"
+                id="isbn"
+                value={formData.isbn}
+                onChange={handleChange}
+              />
+            </div>
+        {formData.action !== "delete" &&
+          <>
+            <div className="form-group">
+              <label htmlFor="title">Title:</label>
+              <input
+                type="text"
+                name="title"
+                id="title"
+                value={formData.title}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="author">Author:</label>
+              <input
+                type="text"
+                name="author"
+                id="author"
+                value={formData.author}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="description">Description:</label>
+              <textarea
+                name="description"
+                id="description"
+                value={formData.description}
+                onChange={handleChange}
+              ></textarea>
+            </div>
+            <div className="form-group">
+              <label htmlFor="ban_reason">Ban Reason:</label>
+              <input
+                type="text"
+                name="ban_reason"
+                id="ban_reason"
+                value={formData.ban_reason}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="banned_by">Banned By:</label>
+              <input
+                type="text"
+                name="banned_by"
+                id="banned_by"
+                value={formData.banned_by}
+                onChange={handleChange}
+              />
+            </div>
+          </>
+        }
         <button type="submit" className="submit-button">Submit</button>
       </form>
 
