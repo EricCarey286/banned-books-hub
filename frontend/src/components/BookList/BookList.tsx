@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Table from "../generic/Table/Table";
+import CustomError from "../generic/customError/CustomError"
 
 interface Book {
     id: number;
@@ -44,7 +45,7 @@ export default function BooksList() {
         <div>
             <h3>Banned Books</h3>
             {myError ? (
-                <p style={{ color: "red" }}>Error: {myError}</p>
+                <CustomError errorMessage={myError} />
             ) : (
                 <Table 
                     data={books} 
