@@ -1,13 +1,13 @@
 import './App.css';
 import BookList  from './components/BookList/BookList';
-import AddBookForm from './components/AddBookForm/AddBookForm';
+import SuggestBookForm from './components/SuggestBookForm/SuggestBookForm';
 
 function App() {
   return (
     <>
       <h1>Banned Books Hub</h1>
       <BookList />
-      <AddBookForm apiUrl="https://localhost:3000"/>
+      <SuggestBookForm apiUrl="https://localhost:3000"/>
     </>
   )
 }
