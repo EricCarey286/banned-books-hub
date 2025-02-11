@@ -58,10 +58,10 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
 });
 
 // HTTPS Server Configuration
-const sslOptions = {
-  key: fs.readFileSync("../certs/localhost.key"), // Path to private key
-  cert: fs.readFileSync("../certs/localhost.crt"), // Path to certificate
-};
+// const sslOptions = {
+//   key: fs.readFileSync("../certs/localhost.key"), // Path to private key
+//   cert: fs.readFileSync("../certs/localhost.crt"), // Path to certificate
+// };
 
 // Start HTTPS server
 https.createServer(app).listen(PORT, () => {
