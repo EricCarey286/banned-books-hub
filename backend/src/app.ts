@@ -1,4 +1,4 @@
-const https = require("https");
+const http = require("http");
 import fs from "fs";
 import cors from "cors";
 import express from "express";
@@ -64,6 +64,6 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
 // };
 
 // Start HTTPS server
-https.createServer(app).listen(PORT, () => {
+http.createServer(app).listen(PORT, () => {
   console.log(`Secure server is running at https://localhost:${PORT}`);
 });
