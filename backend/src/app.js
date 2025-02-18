@@ -3,8 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const https = require("https");
-const fs_1 = __importDefault(require("fs"));
+const http = require("http");
 const cors_1 = __importDefault(require("cors"));
 const express_1 = __importDefault(require("express"));
 const app = (0, express_1.default)();
@@ -46,12 +45,7 @@ app.use((err, req, res, next) => {
     res.status(statusCode).json(errorResponse);
     return;
 });
-// HTTPS Server Configuration
-const sslOptions = {
-    key: fs_1.default.readFileSync("../certs/localhost.key"), // Path to private key
-    cert: fs_1.default.readFileSync("../certs/localhost.crt"), // Path to certificate
-};
 // Start HTTPS server
-https.createServer(sslOptions, app).listen(config_1.PORT, () => {
-    console.log(`Secure server is running at https://localhost:${config_1.PORT}`);
+http.createServer(app).listen(config_1.PORT, () => {
+    console.log(`Secure server is running at http://localhost:${config_1.PORT}`);
 });
