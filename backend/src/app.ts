@@ -65,5 +65,5 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
 
 // Start HTTPS server
 http.createServer(app).listen(PORT, () => {
-  console.log(`Secure server is running at https://localhost:${PORT}`);
+  console.log(`Secure server is running at http://localhost:${PORT}`);
 });
