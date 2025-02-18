@@ -1,5 +1,4 @@
 const http = require("http");
-import fs from "fs";
 import cors from "cors";
 import express from "express";
 const app = express();
@@ -56,12 +55,6 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
   res.status(statusCode).json(errorResponse);
   return;
 });
-
-// HTTPS Server Configuration
-// const sslOptions = {
-//   key: fs.readFileSync("../certs/localhost.key"), // Path to private key
-//   cert: fs.readFileSync("../certs/localhost.crt"), // Path to certificate
-// };
 
 // Start HTTPS server
 http.createServer(app).listen(PORT, () => {
