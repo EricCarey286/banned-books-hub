@@ -7,7 +7,7 @@ function App() {
     <>
       <h1>Banned Books Hub</h1>
       <BookList />
-      <SuggestBookForm apiUrl="https://localhost:3000"/>
+      <SuggestBookForm apiUrl="http://localhost:3000"/>
     </>
   )
 }
