@@ -11,6 +11,8 @@ import { AppError } from "./utils/helper";
 
 import { Request, Response, NextFunction } from 'express';
 
+const FRONTEND_URL = process.env.RAILWAY_PRIVATE_DOMAIN;
+
 app.use(express.json());
 app.use(
   express.urlencoded({
@@ -24,15 +26,17 @@ const limiter = rateLimit({
   max: 100, // Limit each IP to 100 requests per windowMs
 });
 
+const allowedOrigins = [FRONTEND_URL].filter((origin): origin is string => Boolean(origin));;
+
 const corsOptions = {
-  origin: "http://localhost:3000", //TODO: update to frontend domain (for production)
+  origin: allowedOrigins, 
   methods: "GET,POST,PUT,DELETE",
   credentials: true,
 };
 
 app.use(limiter);
 app.use(helmet()); //helmet for security middleware
-app.use(cors()); //TODO: switch to (corsOptions)
+app.use(cors(corsOptions)); //TODO: switch to (corsOptions)
 
 
 app.get("/", (req: Request, res: Response) => {
@@ -57,6 +61,6 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Start HTTPS server
-http.createServer(app).listen(PORT, () => {
-  console.log(`Secure server is running at http://localhost:${PORT}`);
+http.createServer(app).listen(PORT, '0.0.0.0', () => {
+  console.log(`Secure server is running at http://0.0.0.0:${PORT}`);
 });
