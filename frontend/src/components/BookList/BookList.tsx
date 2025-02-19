@@ -17,7 +17,11 @@ interface Book {
     [key: string]: string | number | null; // Index signature for dynamic access
 }
 
-export default function BooksList() {
+interface BookListProps {
+    apiUrl: string; // The base URL of your backend API
+  }
+
+const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
     const [books, setBooks] = useState<Book[]>([]);
     const [myError, setMyError] = useState<string | null>(null);
     const [pageNumber, setPageNumber] = useState<number>(1);
@@ -26,7 +30,7 @@ export default function BooksList() {
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await fetch(`https://localhost:3000/books?page=${pageNumber}`);
+                const response = await fetch(`${apiUrl}${pageNumber}`);
                 if (!response.ok) {
                     throw new Error(`Error: ${response.status} ${response.statusText}`);
                 }
@@ -42,7 +46,7 @@ export default function BooksList() {
         };
 
         fetchBooks();
-    }, [pageNumber]);
+    }, [pageNumber, apiUrl]);
 
     function nextPage(action: string) {
         let nextPage = 0;
@@ -90,3 +94,5 @@ export default function BooksList() {
         </>
     );
 };
+
+export default BooksList; 
