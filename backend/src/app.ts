@@ -12,6 +12,7 @@ import { AppError } from "./utils/helper";
 import { Request, Response, NextFunction } from 'express';
 
 const FRONTEND_URL = process.env.RAILWAY_PRIVATE_DOMAIN;
+console.log('Fzrontend: ' + FRONTEND_URL)
 
 app.use(express.json());
 app.use(
