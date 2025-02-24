@@ -2,6 +2,7 @@
 require('dotenv').config();
 
 export const PORT = process.env.PORT;
+console.log('Port: ' + PORT);
 
 export const DB_CONFIG = {
     db: {

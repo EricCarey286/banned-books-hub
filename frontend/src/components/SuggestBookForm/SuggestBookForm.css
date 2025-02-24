@@ -69,6 +69,10 @@
   .submit-button:hover {
     background-color: #0056b3;
   }
+
+  .success-message {
+    color: cadetblue;
+  }
   
   .error-messages {
     margin-top: 20px;

@@ -6,7 +6,6 @@ interface BookFormProps {
 }
 
 const SuggestBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
-  console.log('even just getting here..');
   const [formData, setFormData] = useState({
     isbn: "",
     title: "",
