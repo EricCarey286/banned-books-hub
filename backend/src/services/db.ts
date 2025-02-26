@@ -1,8 +1,8 @@
 import mysql from "mysql2/promise";
-import { DB_CONFIG } from "../utils/config";
+import { TEST_CONFIG } from "../utils/config";
 require("dotenv").config();
 
-const pool = mysql.createPool(DB_CONFIG.db);
+const pool = mysql.createPool(TEST_CONFIG.test_db);
 
 export default async function query(sql: any, params: any) {
   try {

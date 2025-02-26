@@ -17,10 +17,10 @@ async function getMultiple(page = 1) {
         if (isNaN(page) || page <= 0) {
             throw new helper_1.AppError("Invalid 'page' parameter. It must be a positive integer.", 501);
         }
-        const offset = (0, helper_1.getOffset)(page, config_1.DB_CONFIG.listPerPage);
+        const offset = (0, helper_1.getOffset)(page, config_1.TEST_CONFIG.listPerPage);
         const rows = await (0, db_1.default)("CALL sp_get_books(?, ?)", [
             offset,
-            config_1.DB_CONFIG.listPerPage,
+            config_1.TEST_CONFIG.listPerPage,
         ]);
         const data = (0, helper_1.emptyOrRows)(rows);
         const meta = { page };

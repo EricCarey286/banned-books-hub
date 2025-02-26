@@ -1,7 +1,7 @@
 import mysql from 'mysql2/promise';
 import query from "./db";
 import { getOffset, emptyOrRows, AppError } from "../utils/helper";
-import { DB_CONFIG } from "../utils/config";
+import { TEST_CONFIG } from "../utils/config";
 
 //Type Interface Library
 interface Book {
@@ -19,11 +19,11 @@ export async function getMultiple(page: number = 1) {
     if (isNaN(page) || page <= 0) {
       throw new AppError("Invalid 'page' parameter. It must be a positive integer.", 501);
     }
-
-    const offset = getOffset(page, DB_CONFIG.listPerPage);
+    
+    const offset = getOffset(page, TEST_CONFIG.listPerPage);
     const rows = await query("CALL sp_get_books(?, ?)", [
       offset,
-      DB_CONFIG.listPerPage,
+      TEST_CONFIG.listPerPage,
     ]);
     const data = emptyOrRows(rows);
     const meta = { page };

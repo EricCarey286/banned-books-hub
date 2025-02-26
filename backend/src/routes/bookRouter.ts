@@ -1,7 +1,6 @@
 const expressRouter = require('express');
 const router = expressRouter.Router();
 import * as books from '../services/books';
-import * as suggestedBooks from '../services/suggestedBooks';
 
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/helper';
@@ -11,7 +10,7 @@ router.get('/', async function(req: Request, res: Response, next: NextFunction) 
   try {
     res.json(await books.getMultiple(Number(req.query.page)));
   } catch (err: any) {
-    console.error(`Error while getting books `, err.message);
+    console.error(`Error while getting book `, err.message);
     next(err);
   }
 });

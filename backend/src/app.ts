@@ -12,7 +12,7 @@ import { AppError } from "./utils/helper";
 import { Request, Response, NextFunction } from 'express';
 
 const FRONTEND_URL = process.env.RAILWAY_PRIVATE_DOMAIN;
-console.log('Fzrontend: ' + FRONTEND_URL)
+console.log('Frontend: ' + FRONTEND_URL)
 
 app.use(express.json());
 app.use(
@@ -30,14 +30,15 @@ const limiter = rateLimit({
 const allowedOrigins = [FRONTEND_URL].filter((origin): origin is string => Boolean(origin));;
 
 const corsOptions = {
-  origin: allowedOrigins, 
+  origin: 'http://localhost:3000',//allowedOrigins, 
   methods: "GET,POST,PUT,DELETE",
   credentials: true,
 };
 
 app.use(limiter);
 app.use(helmet()); //helmet for security middleware
-app.use(cors(corsOptions)); //TODO: switch to (corsOptions)
+//app.use(cors(corsOptions));
+app.use(cors());
 
 
 app.get("/", (req: Request, res: Response) => {
@@ -62,6 +63,6 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Start HTTPS server
-http.createServer(app).listen(PORT, '0.0.0.0', () => {
+http.createServer(app).listen(PORT, () => {
   console.log(`Secure server is running at http://0.0.0.0:${PORT}`);
 });

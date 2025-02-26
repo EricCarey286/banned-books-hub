@@ -33,7 +33,7 @@ router.get('/', async function (req, res, next) {
         res.json(await books.getMultiple(Number(req.query.page)));
     }
     catch (err) {
-        console.error(`Error while getting books `, err.message);
+        console.error(`Error while getting book `, err.message);
         next(err);
     }
 });
