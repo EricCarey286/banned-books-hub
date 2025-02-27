@@ -12,7 +12,7 @@ import { AppError } from "./utils/helper";
 import { Request, Response, NextFunction } from 'express';
 
 const FRONTEND_URL = process.env.RAILWAY_PRIVATE_DOMAIN;
-console.log('Fzrontend: ' + FRONTEND_URL)
+console.log('Frontend URL = ' + FRONTEND_URL);
 
 app.use(express.json());
 app.use(
@@ -61,6 +61,7 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
   return;
 });
 
+console.log('App.ts PORT = ' + PORT);
 // Start HTTPS server
 http.createServer(app).listen(PORT, '0.0.0.0', () => {
   console.log(`Secure server is running at http://0.0.0.0:${PORT}`);
