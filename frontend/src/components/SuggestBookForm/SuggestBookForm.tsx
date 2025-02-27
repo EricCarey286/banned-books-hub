@@ -47,7 +47,7 @@ const SuggestBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
         //let response;
         // switch (formData.action) {
         //   case "add":
-        const response = await fetch(`${apiUrl}/suggested_books`, {
+        const response = await fetch(`https://${apiUrl}/suggested_books`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
