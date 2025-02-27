@@ -11,7 +11,7 @@ import { AppError } from "./utils/helper";
 
 import { Request, Response, NextFunction } from 'express';
 
-const FRONTEND_URL = process.env.FRONTEND_URL;
+const FRONTEND_URL = `https://${process.env.FRONTEND_URL}`;
 console.log('Frontend URL = ' + FRONTEND_URL);
 
 app.use(express.json());
