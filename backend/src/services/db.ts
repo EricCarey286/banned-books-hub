@@ -5,6 +5,7 @@ require("dotenv").config();
 const pool = mysql.createPool(DB_CONFIG.db);
 
 export default async function query(sql: any, params: any) {
+  console.log('here - query');
   try {
     const [results] = await pool.execute(sql, params);
 
