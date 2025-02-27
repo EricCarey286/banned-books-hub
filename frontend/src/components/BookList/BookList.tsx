@@ -30,7 +30,7 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await fetch(`${apiUrl}${pageNumber}`);
+                const response = await fetch(`${apiUrl}/books?page=${pageNumber}`);
                 if (!response.ok) {
                     throw new Error(`Error: ${response.status} ${response.statusText}`);
                 }
