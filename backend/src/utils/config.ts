@@ -1,7 +1,11 @@
 require('dotenv').config();
 
 export const PORT = process.env.PORT;
-console.log('Port = ' + PORT);
+console.log('host: '+ process.env.DB_HOST);
+console.log('host: '+ process.env.DB_USER);
+console.log('host: '+ process.env.DB_PASSWORD);
+console.log('host: '+ process.env.DB_NAME);
+console.log('host: '+ process.env.DB_PORT);
 
 export const DB_CONFIG = {
     db: {
