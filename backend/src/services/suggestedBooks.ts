@@ -38,6 +38,7 @@ export async function getMultiple(page: number = 1) {
   }
 }
 
+//TODO: Uncomment after admin portal complete
 //get a single book based on search criteria
 // export async function getBook(searchTerm: string) {
 //   try {
@@ -62,9 +63,6 @@ export async function suggest(book: Book) {
   let invalidFields: any = [];
 
   try {
-    if (!book.isbn || typeof book.isbn !== "string" || book.isbn.trim().length === 0) {
-      invalidFields.push('isbn');
-    }
     if (!book.title || typeof book.title !== "string" || book.title.trim().length === 0) {
       invalidFields.push('title')
     }
@@ -73,12 +71,6 @@ export async function suggest(book: Book) {
     }
     if (!book.banned_by && typeof book.banned_by !== "string" || book.banned_by.trim().length === 0) {
       invalidFields.push('banned_by');
-    }
-    if (book.description !== undefined && typeof book.description !== "string") {
-      invalidFields.push('description');
-    }
-    if (book.ban_reason !== undefined && typeof book.ban_reason !== "string") {
-      invalidFields.push('ban_reason');
     }
 
     if (invalidFields.length > 0) {
@@ -116,6 +108,7 @@ export async function suggest(book: Book) {
   }
 }
 
+//TODO: Uncomment after admin portal complete
 //update an existing book by id
 // export async function update(id: Number, book: Book) {
 //   try {

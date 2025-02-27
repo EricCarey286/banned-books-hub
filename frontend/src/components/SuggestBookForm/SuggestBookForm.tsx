@@ -21,13 +21,6 @@ const SuggestBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
   const validateForm = () => {
     console.log('validating..');
     const newErrors: string[] = [];
-    // if(formData.action !== "update" && formData.action !== "delete"){
-    //   Object.entries(formData).forEach(([key, value]) => {
-    //     if (!value.trim()) {
-    //       newErrors.push(`${key.replace("_", " ")} is required`);
-    //     }
-    //   });
-    // }
   
     if (formData.isbn && !/^\d{10}$/.test(formData.isbn)) {
       newErrors.push("ISBN must be a valid 10-digit number & unique");
@@ -44,9 +37,6 @@ const SuggestBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
     if (validateForm()) {
       console.log('validated')
       try {
-        //let response;
-        // switch (formData.action) {
-        //   case "add":
         const response = await fetch(`https://${apiUrl}/suggested_books`, {
           method: "POST",
           headers: {
@@ -54,30 +44,11 @@ const SuggestBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
           },
           body: JSON.stringify([formData]),
         });
-            // break;
-          // case "delete":
-          //   response = await fetch(`https://localhost:3000/sugessted_books/${formData.isbn}`, {
-          //     method: "DELETE",
-          //   });
-          //   break;
-          // case "update":
-          //   response = await fetch(`https://localhost:3000/sugessted_books/${formData.isbn}`, {
-          //     method: "PUT",
-          //     headers: {
-          //       "Content-Type": "application/json",
-          //     },
-          //     body: JSON.stringify(formData),
-          //   });
-          //  break;
-        //   default:
-        //     setErrors(["Invalid action."]);
-        //     return;
-        // }
 
         if (!response.ok) {
-          console.log('error')
           const errorData = await response.json();
-          setErrors([errorData.message || "Failed to create suggested book."]);
+          console.log(errorData.message)
+          setErrors(["Failed to create suggested book."]);
         } else {
           setSuccessMessage(`Book "${formData.title}" has been successfully suggested. We will review this submission and update the database accordingly`);
           setFormData({

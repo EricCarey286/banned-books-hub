@@ -15,7 +15,6 @@ interface Book {
 
 //query multiple books per page
 export async function getMultiple(page: number = 1) {
-  console.log('here - services')
   try {
     if (isNaN(page) || page <= 0) {
       throw new AppError("Invalid 'page' parameter. It must be a positive integer.", 501);

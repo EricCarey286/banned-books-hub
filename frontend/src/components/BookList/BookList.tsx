@@ -3,7 +3,6 @@ import Table from "../generic/Table/Table";
 import PageButton from "../generic/Button/PageButton";
 
 import './BookList.css'
-
 interface Book {
     id: number;
     isbn: string;
@@ -16,13 +15,11 @@ interface Book {
     updated_at: string;
     [key: string]: string | number | null; // Index signature for dynamic access
 }
-
 interface BookListProps {
     apiUrl: string; // The base URL of your backend API
-  }
+}
 
 const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
-    console.log('Recieved Url = ' + apiUrl);
     const [books, setBooks] = useState<Book[]>([]);
     const [myError, setMyError] = useState<string | null>(null);
     const [pageNumber, setPageNumber] = useState<number>(1);
@@ -41,7 +38,8 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
                 setBooks(data.data[0]);
             } catch (err: unknown) {
                 if (err instanceof Error) {
-                    setMyError(err.message);
+                    console.log(err.message);
+                    setMyError('An error occured while fetching the books. Please try again later.');
                 } else {
                     setMyError("An unknown error occurred.");
                 }
@@ -66,7 +64,8 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
                 }
             }
         } catch (err) {
-            setMyError(`An unexpected error occurred: ${err}. Please try again later.`);
+            console.log(`Error on nextPage action: ${err}`)
+            setMyError('An unexpected error occurred. Please try again later.');
         }
     }
 

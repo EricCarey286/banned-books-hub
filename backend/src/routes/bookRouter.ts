@@ -8,7 +8,6 @@ import { AppError } from '../utils/helper';
 
 //get all books
 router.get('/', async function(req: Request, res: Response, next: NextFunction) {
-  console.log('Here');
   try {
     res.json(await books.getMultiple(Number(req.query.page)));
   } catch (err: any) {
