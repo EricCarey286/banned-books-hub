@@ -22,6 +22,7 @@ interface BookListProps {
   }
 
 const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
+    console.log('Recieved Url = ' + apiUrl);
     const [books, setBooks] = useState<Book[]>([]);
     const [myError, setMyError] = useState<string | null>(null);
     const [pageNumber, setPageNumber] = useState<number>(1);
