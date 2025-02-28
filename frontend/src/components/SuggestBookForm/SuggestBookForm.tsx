@@ -19,7 +19,6 @@ const SuggestBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const validateForm = () => {
-    console.log('validating..');
     const newErrors: string[] = [];
   
     if (formData.isbn && !/^\d{10}$/.test(formData.isbn)) {
@@ -32,10 +31,8 @@ const SuggestBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('submitted')
 
     if (validateForm()) {
-      console.log('validated')
       try {
         const response = await fetch(`https://${apiUrl}/suggested_books`, {
           method: "POST",

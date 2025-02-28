@@ -15,6 +15,7 @@ router.get('/', async function(req: Request, res: Response, next: NextFunction) 
   }
 });
 
+//TODO: Uncomment after admin portal deploy
 //get specific book based on a search term
 // router.get('/search', async function(req: Request, res: Response, next: NextFunction) {
 //   try {
@@ -58,6 +59,7 @@ router.post('/', async function(req: Request, res: Response, next: NextFunction)
   }
 });
 
+//TODO: Uncomment after admin portal deploy
 //update an existing book entry
 // router.put('/:id', async function(req: Request, res: Response, next: NextFunction) {
 //   try {
