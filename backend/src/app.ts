@@ -12,6 +12,7 @@ import { AppError } from "./utils/helper";
 import { Request, Response, NextFunction } from 'express';
 
 const FRONTEND_URL = `https://${process.env.FRONTEND_URL}`;
+const BACKEND_URL = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
 
 app.use(express.json());
 app.use(
@@ -36,7 +37,7 @@ const corsOptions = {
 
 app.use(limiter);
 app.use(helmet()); //helmet for security middleware
-app.use(cors(corsOptions)); //TODO: switch to (corsOptions)
+app.use(cors(corsOptions));
 
 
 app.get("/", (req: Request, res: Response) => {
@@ -62,5 +63,5 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
 
 // Start HTTPS server
 http.createServer(app).listen(PORT, '0.0.0.0', () => {
-  console.log(`Secure server is running at http://0.0.0.0:${PORT}`);
+  console.log(`Secure server is running at ${BACKEND_URL}:${PORT}`);
 });

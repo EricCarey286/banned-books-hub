@@ -23,6 +23,9 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
     const [books, setBooks] = useState<Book[]>([]);
     const [myError, setMyError] = useState<string | null>(null);
     const [pageNumber, setPageNumber] = useState<number>(1);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [hasNextPage, setHasNextPage] = useState(true);
+
 
     // Fetch data from the backend
     useEffect(() => {
@@ -35,7 +38,8 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
                     throw new Error(`Error: ${response.status} ${response.statusText}`);
                 }
                 const data = await response.json();
-                setBooks(data.data[0]);
+                setBooks(data.data);
+                setHasNextPage(data.meta.hasNextPage);
             } catch (err: unknown) {
                 if (err instanceof Error) {
                     console.log(err.message);
@@ -43,6 +47,8 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
                 } else {
                     setMyError("An unknown error occurred.");
                 }
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -75,6 +81,8 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
                 <h3>Banned Books</h3>
                 {myError ? (
                     <p style={{ color: "red" }}>Error: {myError}</p>
+                ) : loading ? (
+                    <p>Loading Books...</p>
                 ) : (
                     <Table
                         data={books}
@@ -90,8 +98,8 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
                 )}
             </div>
             <div className='book-container'>
-                <PageButton onClick={() => nextPage('prev')} action='prev' disabled={pageNumber == 1 ? true : false} currentPage={pageNumber}/>
-                <PageButton onClick={() => nextPage('next')} action='next' currentPage={pageNumber}/>
+                <PageButton onClick={() => nextPage('prev')} action='prev' disabled={pageNumber === 1} currentPage={pageNumber}/>
+                <PageButton onClick={() => nextPage('next')} action='next' disabled={!hasNextPage} currentPage={pageNumber}/>
             </div>
         </>
     );

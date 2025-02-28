@@ -15,22 +15,25 @@ interface Book {
 
 //query multiple books per page
 export async function getMultiple(page: number = 1) {
+  const limit = DB_CONFIG.listPerPage;
   try {
     if (isNaN(page) || page <= 0) {
       throw new AppError("Invalid 'page' parameter. It must be a positive integer.", 501);
     }
 
-    const offset = getOffset(page, DB_CONFIG.listPerPage);
+    const offset = getOffset(page, limit);
     const rows = await query("CALL sp_get_books(?, ?)", [
       offset,
-      DB_CONFIG.listPerPage,
+      limit + 1,
     ]);
     const data = emptyOrRows(rows);
-    const meta = { page };
+
+    const books = data[0].slice(0, limit); // Keep only 10 books
+    const hasNextPage = data[0].length > limit; // If 11 books, there is another page
 
     return {
-      data,
-      meta,
+      data: books,
+      meta: { page, hasNextPage },
     };
   } catch (err: any) {
     console.error("Error in getMultiple:", err);

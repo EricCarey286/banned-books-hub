@@ -2,7 +2,7 @@ import './App.css';
 import BookList  from './components/BookList/BookList';
 import SuggestBookForm from './components/SuggestBookForm/SuggestBookForm';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL; //backend url from railway
 
 function App() {
   return (
