@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import Table from "../generic/Table/Table";
+//import Table from "../generic/Table/Table";
 import PageButton from "../generic/Button/PageButton";
+import Card from "../generic/Card/Card";
 
 import './BookList.css'
 interface Book {
@@ -31,7 +32,7 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await fetch(`https://${apiUrl}/books?page=${pageNumber}`);
+                const response = await fetch(`http://${apiUrl}/books?page=${pageNumber}`);
                 console.log(response);
                 if (!response.ok) {
                     console.log('Fetch Books Error');
@@ -84,25 +85,41 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
                 ) : loading ? (
                     <p>Loading Books...</p>
                 ) : (
-                    <Table
-                        data={books}
-                        visibleColumns={['title', 'author', 'description', 'banned_by', 'ban_reason', 'isbn']}
-                        headers={{
-                            title: "Titlle",
-                            author: "Author",
-                            description: "Description",
-                            banned_by: "Banned By",
-                            ban_reason: "Ban Reasoning",
-                            isbn: "ISBN",
-                        }} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4">
+                        {books.map((item) => (
+                            <Card
+                            key={item.id}
+                            data={item}
+                            renderFields={(key: keyof Book, value: Book[keyof Book]) => (
+                              key !== "title" && key !== "author" && key !== "isbn" && key !== "description" && key !== "ban_reason" && key !== "banned_by" ? (
+                                <p key={key} className="text-gray-500 text-xs">
+                                  {key}: {String(value)}
+                                </p>
+                              ) : null
+                            )}
+                          />
+                        ))}
+                    </div>
                 )}
             </div>
             <div className='book-container'>
-                <PageButton onClick={() => nextPage('prev')} action='prev' disabled={pageNumber === 1} currentPage={pageNumber}/>
-                <PageButton onClick={() => nextPage('next')} action='next' disabled={!hasNextPage} currentPage={pageNumber}/>
+                <PageButton onClick={() => nextPage('prev')} action='prev' disabled={pageNumber === 1} currentPage={pageNumber} />
+                <PageButton onClick={() => nextPage('next')} action='next' disabled={!hasNextPage} currentPage={pageNumber} />
             </div>
         </>
     );
 };
+
+/**<Table
+data={books}
+visibleColumns={['title', 'author', 'description', 'banned_by', 'ban_reason', 'isbn']}
+headers={{
+    title: "Titlle",
+    author: "Author",
+    description: "Description",
+    banned_by: "Banned By",
+    ban_reason: "Ban Reasoning",
+    isbn: "ISBN",
+}} />**/
 
 export default BooksList; 
