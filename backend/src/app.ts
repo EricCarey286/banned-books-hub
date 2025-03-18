@@ -11,7 +11,7 @@ import { AppError } from "./utils/helper";
 
 import { Request, Response, NextFunction } from 'express';
 
-const FRONTEND_URL = `https://${process.env.FRONTEND_URL}`;
+const FRONTEND_URL = `http://${process.env.FRONTEND_URL}`;
 const BACKEND_URL = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
 
 app.use(express.json());

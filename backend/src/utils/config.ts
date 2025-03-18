@@ -10,5 +10,5 @@ export const DB_CONFIG = {
       database: process.env.DB_NAME,
       port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 8080,
     },
-    listPerPage: 10,
+    listPerPage: 9,
   };

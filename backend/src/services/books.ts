@@ -60,6 +60,20 @@ export async function getBook(searchTerm: string) {
   }
 }
 
+//get a single featured book
+export async function getFeaturedBook() {
+  try {
+    const rows = await query(`CALL sp_search_for_featured`, []);
+    const data = emptyOrRows(rows);
+    return {
+      data,
+    };
+  } catch (err: any) {
+    console.error("Error in getFeaturedBook:", err);
+    throw err;
+  }
+}
+
 //create a book
 export async function create(book: Book) {
   let invalidFields: any = [];

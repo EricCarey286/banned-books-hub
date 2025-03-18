@@ -32,8 +32,7 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await fetch(`https://${apiUrl}/books?page=${pageNumber}`);
-                console.log(response);
+                const response = await fetch(`http://${apiUrl}/books?page=${pageNumber}`);
                 if (!response.ok) {
                     console.log('Fetch Books Error');
                     throw new Error(`Error: ${response.status} ${response.statusText}`);
@@ -78,8 +77,8 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
 
     return (
         <>
-            <div>
-                <h3>Banned Books</h3>
+            <div className="m-4">
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Banned Books</h3>
                 {myError ? (
                     <p style={{ color: "red" }}>Error: {myError}</p>
                 ) : loading ? (
@@ -88,7 +87,7 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4">
                         {books.map((item) => (
                             <Card
-                            key={item.id}
+                            key={`bookList-${item.id}`}
                             data={item}
                             renderFields={(key: keyof Book, value: Book[keyof Book]) => (
                               key !== "title" && key !== "author" && key !== "isbn" && key !== "description" && key !== "ban_reason" && key !== "banned_by" ? (
@@ -109,17 +108,5 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
         </>
     );
 };
-
-/**<Table
-data={books}
-visibleColumns={['title', 'author', 'description', 'banned_by', 'ban_reason', 'isbn']}
-headers={{
-    title: "Titlle",
-    author: "Author",
-    description: "Description",
-    banned_by: "Banned By",
-    ban_reason: "Ban Reasoning",
-    isbn: "ISBN",
-}} />**/
 
 export default BooksList; 

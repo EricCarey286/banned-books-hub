@@ -33,6 +33,16 @@ router.get('/search', async function(req: Request, res: Response, next: NextFunc
   }
 });
 
+//get specific book based on a search term
+router.get('/featured', async function(req: Request, res: Response, next: NextFunction) {
+  try {
+    res.json(await books.getFeaturedBook());
+  } catch (err: any) {
+    console.error(`Error while grabbing featured book `, err.message);
+    next(err);
+  }
+});
+
 //create a book entry
 router.post('/', async function(req: Request, res: Response, next: NextFunction) {
   const booksArray = req.body;
