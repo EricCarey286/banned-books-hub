@@ -4,6 +4,8 @@ import PageButton from "../generic/Button/PageButton";
 import Card from "../generic/Card/Card";
 
 import './BookList.css'
+
+const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
 interface Book {
     id: number;
     isbn: string;
@@ -21,6 +23,8 @@ interface BookListProps {
 }
 
 const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
+
+    console.log(URL_PREFIX);
     const [books, setBooks] = useState<Book[]>([]);
     const [myError, setMyError] = useState<string | null>(null);
     const [pageNumber, setPageNumber] = useState<number>(1);
@@ -32,7 +36,7 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await fetch(`https://${apiUrl}/books?page=${pageNumber}`);
+                const response = await fetch(`${URL_PREFIX}://${apiUrl}/books?page=${pageNumber}`);
                 if (!response.ok) {
                     console.log('Fetch Books Error');
                     throw new Error(`Error: ${response.status} ${response.statusText}`);

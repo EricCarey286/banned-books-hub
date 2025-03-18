@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import FeaturedCard from "../generic/Card/FeaturedCard";
 
+const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
+
 interface Book {
     id: number;
     isbn: string;
@@ -18,6 +20,7 @@ interface BookListProps {
 }
 
 const FeaturedBook: React.FC<BookListProps> = ({ apiUrl }) => {
+
     const [books, setBooks] = useState<Book[]>([]);
     const [myError, setMyError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
@@ -27,7 +30,7 @@ const FeaturedBook: React.FC<BookListProps> = ({ apiUrl }) => {
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await fetch(`https://${apiUrl}/books/featured`);
+                const response = await fetch(`${URL_PREFIX}://${apiUrl}/books/featured`);
                 if (!response.ok) {
                     console.log('Fetch Featured Error');
                     throw new Error(`Error: ${response.status} ${response.statusText}`);
