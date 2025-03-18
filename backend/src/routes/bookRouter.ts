@@ -1,7 +1,6 @@
 const expressRouter = require('express');
 const router = expressRouter.Router();
 import * as books from '../services/books';
-import * as suggestedBooks from '../services/suggestedBooks';
 
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/helper';

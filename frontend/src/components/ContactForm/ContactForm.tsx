@@ -1,20 +1,17 @@
 import React, { useState } from "react";
-import "./SuggestBookForm.css"; // Import the CSS file
+import "./ContactForm.css"; // Import the CSS file
 
 const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
 
-interface BookFormProps {
+interface ContactFormProps {
   apiUrl: string; // The base URL of your backend API
 }
 
-const SuggestBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
+const ContactForm: React.FC<ContactFormProps> = ({ apiUrl }) => {
   const [formData, setFormData] = useState({
-    isbn: "",
-    title: "",
-    author: "",
-    description: "",
-    ban_reason: "",
-    banned_by: "",
+    name: "",
+    email: "",
+    message: "",
   });
 
   const [errors, setErrors] = useState<string[]>([]);
@@ -22,11 +19,10 @@ const SuggestBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
 
   const validateForm = () => {
     const newErrors: string[] = [];
-  
-    if (formData.isbn && !/^\d{10}$/.test(formData.isbn)) {
-      newErrors.push("ISBN must be a valid 10-digit number & unique");
-    }
 
+    if (formData.email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)) {
+      newErrors.push("Email must be a valid email format: name@example.com");
+    }
     setErrors(newErrors);
     return newErrors.length === 0;
   };
@@ -36,7 +32,7 @@ const SuggestBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
 
     if (validateForm()) {
       try {
-        const response = await fetch(`${URL_PREFIX}://${apiUrl}/suggested_books`, {
+        const response = await fetch(`${URL_PREFIX}://${apiUrl}/contact_form`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -49,14 +45,11 @@ const SuggestBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
           console.log(errorData.message)
           setErrors(["Failed to create suggested book."]);
         } else {
-          setSuccessMessage(`Book "${formData.title}" has been successfully suggested. We will review this submission and update the database accordingly`);
+          setSuccessMessage('Your message has been submitted. We will respond as soon as possible');
           setFormData({
-            isbn: "",
-            title: "",
-            author: "",
-            description: "",
-            ban_reason: "",
-            banned_by: "",
+            name: "",
+            email: "",
+            message: "",
           });
           setErrors([]);
         }
@@ -77,66 +70,36 @@ const SuggestBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
   return (
     <div className="form-container">
       <form onSubmit={handleSubmit} className="book-form">
-        <h2 className="form-title">Suggest a banned book to add</h2>
+        <h2 className="form-title">Contact Us</h2>
         <div className="form-group">
-              <label htmlFor="isbn">ISBN:</label>
+              <label htmlFor="name">Name:</label>
               <input
                 type="text"
-                name="isbn"
-                id="isbn"
-                value={formData.isbn}
+                name="name"
+                id="name"
+                value={formData.name}
                 onChange={handleChange}
               />
             </div>
           <>
             <div className="form-group">
-              <label htmlFor="title">Title:</label>
+              <label htmlFor="email">Email:</label>
               <input
                 type="text"
-                name="title"
-                id="title"
-                value={formData.title}
+                name="email"
+                id="email"
+                value={formData.email}
                 onChange={handleChange}
               />
             </div>
             <div className="form-group">
-              <label htmlFor="author">Author:</label>
-              <input
-                type="text"
-                name="author"
-                id="author"
-                value={formData.author}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="description">Description:</label>
+              <label htmlFor="message">Message:</label>
               <textarea
-                name="description"
-                id="description"
-                value={formData.description}
+                name="message"
+                id="message"
+                value={formData.message}
                 onChange={handleChange}
               ></textarea>
-            </div>
-            <div className="form-group">
-              <label htmlFor="ban_reason">Ban Reason:</label>
-              <input
-                type="text"
-                name="ban_reason"
-                id="ban_reason"
-                value={formData.ban_reason}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="banned_by">Banned By:</label>
-              <input
-                type="text"
-                name="banned_by"
-                id="banned_by"
-                value={formData.banned_by}
-                onChange={handleChange}
-              />
             </div>
           </>
         <button type="submit" className="submit-button">Submit</button>
@@ -162,4 +125,4 @@ const SuggestBookForm: React.FC<BookFormProps> = ({ apiUrl }) => {
   );
 };
 
-export default SuggestBookForm;
+export default ContactForm;
