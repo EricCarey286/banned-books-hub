@@ -27,7 +27,7 @@ const FeaturedBook: React.FC<BookListProps> = ({ apiUrl }) => {
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await fetch(`http://${apiUrl}/books/featured`);
+                const response = await fetch(`https://${apiUrl}/books/featured`);
                 if (!response.ok) {
                     console.log('Fetch Featured Error');
                     throw new Error(`Error: ${response.status} ${response.statusText}`);
