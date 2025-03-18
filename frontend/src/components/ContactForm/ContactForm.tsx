@@ -68,47 +68,57 @@ const ContactForm: React.FC<ContactFormProps> = ({ apiUrl }) => {
   };
 
   return (
-    <div className="form-container">
-      <form onSubmit={handleSubmit} className="book-form">
-        <h2 className="form-title">Contact Us</h2>
-        <div className="form-group">
-              <label htmlFor="name">Name:</label>
-              <input
-                type="text"
-                name="name"
-                id="name"
-                value={formData.name}
-                onChange={handleChange}
-              />
-            </div>
-          <>
-            <div className="form-group">
-              <label htmlFor="email">Email:</label>
-              <input
-                type="text"
-                name="email"
-                id="email"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="message">Message:</label>
-              <textarea
-                name="message"
-                id="message"
-                value={formData.message}
-                onChange={handleChange}
-              ></textarea>
-            </div>
-          </>
-        <button type="submit" className="submit-button">Submit</button>
+    <div className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg mt-10">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <h2 className="text-2xl font-semibold text-gray-800 text-center">Contact Us</h2>
+
+        <div>
+          <label htmlFor="name" className="block font-semibold text-gray-700">Name:</label>
+          <input
+            type="text"
+            name="name"
+            id="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="email" className="block font-semibold text-gray-700">Email:</label>
+          <input
+            type="email"
+            name="email"
+            id="email"
+            value={formData.email}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="message" className="block font-semibold text-gray-700">Message:</label>
+          <textarea
+            name="message"
+            id="message"
+            value={formData.message}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-md p-2 h-32 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          ></textarea>
+        </div>
+
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white font-semibold py-2 rounded-md hover:bg-blue-700 transition duration-300"
+        >
+          Submit
+        </button>
       </form>
 
       {errors.length > 0 && (
-        <div className="error-messages">
-          <strong>The following errors occurred:</strong>
-          <ul>
+        <div className="mt-4 p-4 bg-gray-100 border border-gray-300 rounded-md">
+          <strong className="block text-red-600 font-semibold">The following errors occurred:</strong>
+          <ul className="list-none pl-0 text-gray-800">
             {errors.map((error, index) => (
               <li key={index}>{error}</li>
             ))}
@@ -117,7 +127,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ apiUrl }) => {
       )}
 
       {successMessage && (
-        <div className="success-message">
+        <div className="mt-4 p-4 bg-green-100 border border-green-300 text-gray-800 rounded-md">
           {successMessage}
         </div>
       )}
