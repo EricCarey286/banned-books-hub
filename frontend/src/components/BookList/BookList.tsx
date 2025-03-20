@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 //import Table from "../generic/Table/Table";
 import PageButton from "../generic/Button/PageButton";
-import Card from "../generic/Card/Card";
+import BookCard from "../generic/Card/BookCard";
 
 import './BookList.css'
 
@@ -47,7 +47,7 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
             } catch (err: unknown) {
                 if (err instanceof Error) {
                     console.log(err.message);
-                    setMyError('An error occured while fetching the books. Please try again later.');
+                    setMyError('An error occured while fetching the books. Please refresh or try again later.');
                 } else {
                     setMyError("An unknown error occurred.");
                 }
@@ -75,7 +75,7 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
             }
         } catch (err) {
             console.log(`Error on nextPage action: ${err}`)
-            setMyError('An unexpected error occurred. Please try again later.');
+            setMyError('An unexpected error occurred. Please refresh or try again later.');
         }
     }
 
@@ -88,9 +88,9 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
                 ) : loading ? (
                     <p>Loading Books...</p>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-5 p-2">
                         {books.map((item) => (
-                            <Card
+                            <BookCard
                             key={`bookList-${item.id}`}
                             data={item}
                             renderFields={(key: keyof Book, value: Book[keyof Book]) => (

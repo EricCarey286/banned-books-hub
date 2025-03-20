@@ -1,39 +1,43 @@
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
 type CardProps<T extends object> = {
     data: T;
     renderFields?: (key: keyof T, value: T[keyof T]) => ReactNode;
+    clickable?: boolean;
+    header?: ReactNode;
+    leftSection?: ReactNode;
+    rightSection?: ReactNode;
 };
 
-const Card = <T extends object>({ data, renderFields }: CardProps<T>) => {
+const Card = <T extends object>({
+    data,
+    renderFields,
+    clickable,
+    header,
+    leftSection,
+    rightSection
+}: CardProps<T>) => {
     return (
-        <div className="bg-white shadow-md rounded-2xl p-4 border border-gray-200 transform transition duration-300 hover:scale-105">
-            {"title" in data && typeof data.title === "string" && (
-                <h2 className="text-gray-600 text-lg font-semibold mt-3">{data.title}</h2>
-            )}
-            {"author" in data && typeof data.author === "string" && (
-                <p className="text-gray-600 text-sm">Author: {data.author}</p>
-            )}
-            {"isbn" in data && typeof data.isbn === "string" && (
-                <p className="text-gray-500 text-xs">ISBN: {data.isbn}</p>
-            )}
-            {"description" in data && typeof data.description === "string" && (
-                <p className="text-gray-600 text-sm mt-2">{data.description}</p>
-            )}
-            {"ban_reason" in data && data.ban_reason !== null && (
-                <p className="text-gray-500 text-xs"><span className="font-bold">Ban Reason:</span> {String(data.ban_reason)}</p>
-            )}
-            {"banned_by" in data && data.banned_by !== null && (
-                <p className="text-gray-500 text-xs"><span className="font-bold">Banned By:</span> {String(data.banned_by)}</p>
-            )}
+        <div className={`bg-white shadow-md rounded-lg p-4 border border-gray-200 transform transition duration-300 
+            ${clickable ? "hover:scale-105 cursor-pointer" : ""}`}>
+            {header && <div className="pb-2">{header}</div>}
 
-            {renderFields &&
+            {leftSection || rightSection ? (
+                <div className="flex justify-between pb-4">
+                    {leftSection && <div className="flex-1 pr-4">{leftSection}</div>}
+                    {leftSection && rightSection && <div className="border-l border-gray-300"></div>}
+                    {rightSection && <div className="flex-1 pl-4 text-center">{rightSection}</div>}
+                </div>
+            ) : (
+                /* Default case: Render all fields in a simple list */
                 Object.entries(data)
                     .filter(([key]) => key !== "id" && key !== "created_on" && key !== "updated_on")
                     .map(([key, value]) =>
-                        renderFields(key as keyof T, value)
+                        renderFields ? renderFields(key as keyof T, value) : (
+                            <p key={key} className="text-gray-600 text-sm">{`${key}: ${String(value)}`}</p>
+                        )
                     )
-            }
+            )}
         </div>
     );
 };
