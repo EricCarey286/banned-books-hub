@@ -38,25 +38,24 @@ export async function getMultiple(page: number = 1) {
   }
 }
 
-//TODO: Uncomment after admin portal complete
 //get a single book based on search criteria
-// export async function getBook(searchTerm: string) {
-//   try {
-//     if (typeof searchTerm !== "string" || searchTerm.trim() === "") {
-//       throw new AppError("Invalid searchTerm parameter. It must be a non-empty string.", 501);
-//     }
+export async function getBook(searchTerm: string) {
+  try {
+    if (typeof searchTerm !== "string" || searchTerm.trim() === "") {
+      throw new AppError("Invalid searchTerm parameter. It must be a non-empty string.", 501);
+    }
 
-//     const regex = "%" + searchTerm + "%";
-//     const rows = await query(`CALL sp_search_books_by_param(?)`, [regex]);
-//     const data = emptyOrRows(rows);
-//     return {
-//       data,
-//     };
-//   } catch (err: any) {
-//     console.error("Error in getBook:", err);
-//     throw err;
-//   }
-// }
+    const regex = "%" + searchTerm + "%";
+    const rows = await query(`CALL sp_search_sugg_books_by_param(?)`, [regex]);
+    const data = emptyOrRows(rows);
+    return {
+      data,
+    };
+  } catch (err: any) {
+    console.error("Error in getBook:", err);
+    throw err;
+  }
+}
 
 //create a book
 export async function suggest(book: Book) {
@@ -108,97 +107,47 @@ export async function suggest(book: Book) {
   }
 }
 
-//TODO: Uncomment after admin portal complete
-//update an existing book by id
-// export async function update(id: Number, book: Book) {
-//   try {
-//     // Validate the input: ensure at least one field is provided
-//     if (!book.title && !book.author && !book.description && !book.ban_reason && !book.banned_by) {
-//       throw new AppError("At least one field must be provided to update.", 501, {
-//         validFields: ['title', 'author', 'description', 'ban_reason', 'banned_by'],
-//       });
-//     }
+//remove an existing suggested book by id
+export async function remove(id: Number) {
+  try {
+    const result = await query("CALL sp_delete_sugg_book(?)", [id]);
 
-//     const errors: string[] = [];
+    let message = '';
 
-//     if (book.title && (typeof book.title !== 'string' || book.title.trim().length === 0)) {
-//       errors.push('Title must be a non-empty string.');
-//     }
+    const affectedRows = (result[0] as mysql.ResultSetHeader).affectedRows || 0;
 
-//     if (book.author && (typeof book.author !== 'string' || book.author.trim().length === 0)) {
-//       errors.push('Author must be a non-empty string.');
-//     }
+    if (affectedRows) {
+      message = `Book with id: ${id} deleted successfully`;
+      return { message };
+    } else {
+      throw new AppError(`Error deleting book with id: ${id}`, 501);
+    }
 
-//     if (book.description && (typeof book.description !== 'string' || book.description.trim().length === 0)) {
-//       errors.push('Description must be anon-empty string.');
-//     }
+  } catch (err: any) {
+    console.error("Error in remove:", err);
+    throw err;
+  }
+}
 
-//     if (book.ban_reason && (typeof book.ban_reason !== 'string' || book.ban_reason.trim().length === 0)) {
-//       errors.push('Ban reason must be a non-empty string.');
-//     }
+//remove multiple suggested books by id
+export async function removeMultiple(ids: number[]) {
+  try {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new AppError("Invalid input: 'ids' must be a non-empty array", 400);
+    }
 
-//     if (book.banned_by && (typeof book.banned_by !== 'string' || book.banned_by.trim().length === 0)) {
-//       errors.push('Banned by must be a non-empty string.');
-//     }
+    // Convert array to a comma-separated string WITHOUT quotes (for SQL IN clause)
+    const idString = ids.join(",");
 
-//     if (errors.length > 0) {
-//       throw new AppError('Validation Failed', 501, {
-//         details: errors,
-//       })
-//     }
+    // Call the stored procedure
+    const result = await query("CALL sp_delete_sugg_books(?)", [idString]);
 
-//     // Assign `null` to missing fields to satisfy the stored procedure requirements
-//     const title = book.title || null;
-//     const author = book.author || null;
-//     const description = book.description || null;
-//     const ban_reason = book.ban_reason || null;
-//     const banned_by = book.banned_by || null;
+    return {
+      message: `Books with IDs: ${ids.join(", ")} deleted successfully`
+    };
 
-//     const result = await query("CALL sp_update_book(?, ?, ?, ?, ?, ?)", [
-//       id,
-//       title,
-//       author,
-//       description,
-//       ban_reason,
-//       banned_by,
-//     ]);
-
-//     let message = '';
-
-//     const affectedRows = (result[0] as mysql.ResultSetHeader).affectedRows || 0;
-
-//     if (affectedRows) {
-//       message = `Book with id: ${id} updated successfully`;
-//       return { message };
-//     } else {
-//       throw new AppError(`Error updating book with id: ${id}`, 501, {
-//         details: 'Query failed to update an existing book'
-//       });
-//     }
-//   } catch (err: any) {
-//     console.error("Error in update:", err);
-//     throw err;
-//   }
-// }
-
-//remove an existing book by id
-// export async function remove(id: Number) {
-//   try {
-//     const result = await query("CALL sp_delete_book(?)", [id]);
-
-//     let message = '';
-
-//     const affectedRows = (result[0] as mysql.ResultSetHeader).affectedRows || 0;
-
-//     if (affectedRows) {
-//       message = `Book with id: ${id} deleted successfully`;
-//       return { message };
-//     } else {
-//       throw new AppError(`Error deleting book with id: ${id}`, 501);
-//     }
-
-//   } catch (err: any) {
-//     console.error("Error in remove:", err);
-//     throw err;
-//   }
-// }
+  } catch (err: any) {
+    console.error("Error in removeMultiple:", err);
+    throw err;
+  }
+}

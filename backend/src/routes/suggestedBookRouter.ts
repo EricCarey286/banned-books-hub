@@ -59,35 +59,37 @@ router.post('/', async function(req: Request, res: Response, next: NextFunction)
   }
 });
 
-//TODO: Uncomment after admin portal deploy
-//update an existing book entry
-// router.put('/:id', async function(req: Request, res: Response, next: NextFunction) {
-//   try {
-//     const id = Number(req.params.id);
-//     if (isNaN(id) || id <= 0) {
-//       return res.status(400).json({ error: 'Invalid ID. ID must be a positive number.' });
-//     }
-
-//     res.json(await books.update(Number(req.params.id), req.body));
-//   } catch (err: any) {
-//     console.error(`Error while updating book with id: ${req.params.id}`, err.message);
-//     next(err);
-//   }
-// });
-
 //delete an existing book entry
-// router.delete('/:id', async function(req: Request, res: Response, next: NextFunction) {
-//   try {
-//     const id = Number(req.params.id);
-//     if (isNaN(id) || id <= 0) {
-//       return res.status(400).json({ error: 'Invalid ID. ID must be a positive number.' });
-//     }
+router.delete('/:id', async function(req: Request, res: Response, next: NextFunction) {
+  try {
+    const id = Number(req.params.id);
+    if (isNaN(id) || id <= 0) {
+      return res.status(400).json({ error: 'Invalid ID. ID must be a positive number.' });
+    }
     
-//     res.json(await books.remove(Number(req.params.id)));
-//   } catch (err: any) {
-//     console.error(`Error while deleting book with id: ${req.params.id}`, err.message);
-//     next(err);
-//   }
-// });
+    res.json(await suggestedBooks.remove(Number(req.params.id)));
+  } catch (err: any) {
+    console.error(`Error while deleting book with id: ${req.params.id}`, err.message);
+    next(err);
+  }
+});
+
+//delete multiple existing book entries
+router.delete("/", async function (req: Request, res: Response, next: NextFunction) {
+  try {
+    const { ids } = req.body; // Expecting { ids: [1, 2, 3] }
+
+    if (!Array.isArray(ids) || ids.length === 0 || ids.some(id => typeof id !== "number" || id <= 0)) {
+      return res.status(400).json({ error: "Invalid 'ids' array. Must be a non-empty array of positive numbers." });
+    }
+
+    const result = await suggestedBooks.removeMultiple(ids);
+    res.json(result);
+
+  } catch (err: any) {
+    console.error(`Error while deleting books with ids: ${req.body.ids}`, err.message);
+    next(err);
+  }
+});
 
 export default router;

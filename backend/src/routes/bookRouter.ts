@@ -98,4 +98,22 @@ router.delete('/:id', async function(req: Request, res: Response, next: NextFunc
   }
 });
 
+//delete multiple existing book entries
+router.delete("/", async function (req: Request, res: Response, next: NextFunction) {
+  try {
+    const { ids } = req.body; // Expecting { ids: [1, 2, 3] }
+
+    if (!Array.isArray(ids) || ids.length === 0 || ids.some(id => typeof id !== "number" || id <= 0)) {
+      return res.status(400).json({ error: "Invalid 'ids' array. Must be a non-empty array of positive numbers." });
+    }
+
+    const result = await books.removeMultiple(ids);
+    res.json(result);
+
+  } catch (err: any) {
+    console.error(`Error while deleting books with ids: ${req.body.ids}`, err.message);
+    next(err);
+  }
+});
+
 export default router;

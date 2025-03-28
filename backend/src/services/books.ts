@@ -226,3 +226,26 @@ export async function remove(id: Number) {
     throw err;
   }
 }
+
+//remove multiple books
+export async function removeMultiple(ids: number[]) {
+  try {
+      if (!Array.isArray(ids) || ids.length === 0) {
+        throw new AppError("Invalid input: 'ids' must be a non-empty array", 400);
+      }
+  
+      // Convert array to a comma-separated string WITHOUT quotes (for SQL IN clause)
+      const idString = ids.join(",");
+  
+      // Call the stored procedure
+      const result = await query("CALL sp_delete_books(?)", [idString]);
+  
+      return {
+        message: `Books with IDs: ${ids.join(", ")} deleted successfully`
+      };
+  
+    } catch (err: any) {
+      console.error("Error in removeMultiple:", err);
+      throw err;
+    }
+}
