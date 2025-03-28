@@ -3,7 +3,7 @@ import BookList  from './components/BookList/BookList';
 import FeaturedBook  from './components/FeaturedBook/FeaturedBook';
 import SuggestBookForm from './components/SuggestBookForm/SuggestBookForm';
 import ContactForm from './components/ContactForm/ContactForm';
-import AddBookForm from './components/AddBookForm/AddBookForm';
+//import AddBookForm from './components/AddBookForm/AddBookForm';
 
 
 const API_URL = import.meta.env.VITE_API_URL; //backend url
@@ -16,7 +16,7 @@ function App() {
       <FeaturedBook apiUrl={API_URL}/>
       <BookList apiUrl={API_URL}/>
       <SuggestBookForm apiUrl={API_URL}/>
-      <AddBookForm apiUrl={API_URL}/>
+      {/*<AddBookForm apiUrl={API_URL}/>*/}
       <ContactForm apiUrl={API_URL}/>
     </>
   )
