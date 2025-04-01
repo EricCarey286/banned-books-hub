@@ -2,13 +2,18 @@ import React, { useState } from "react";
 import Card from "./Card";
 import Modal from "../Button/Modal";
 
-type Book = {
+interface Book {
+    id: number;
+    isbn: string;
     title: string;
     author: string;
-    ban_reason?: string;
-    description?: string;
-    banned_by?: string;
-  };
+    description: string;
+    ban_reason: string | null;
+    banned_by: string | null;
+    created_at: string;
+    updated_at: string;
+    [key: string]: string | number | null; // Index signature for dynamic access
+}
 
 // Define the type for the BookCard component's props
 type BookCardProps<T extends Book> = {
@@ -54,11 +59,12 @@ const BookCard = <T extends Book>({ data, renderFields }: BookCardProps<T>) => {
 
             <Modal isOpen={isModalOpen} onClose={closeModal} title={data.title}>
                 <p className="text-gray-600 text-sm mb-4">Author: {data.author}</p>
+                <p className="text-gray-600 text-xs mb-4"><span className="font-bold">ISBN: </span>{data.isbn}</p>
                 <p className="text-gray-600 text-sm mb-4">{data.description}</p>
-                <p className="text-gray-500 text-xs">
+                <p className="text-gray-500 text-sm">
                     <span className="font-bold">Ban Reason:</span> {String(data.ban_reason)}
                 </p>
-                <p className="text-gray-500 text-xs">
+                <p className="text-gray-500 text-sm">
                     <span className="font-bold">Ban Reason:</span> {String(data.banned_by)}
                 </p>
             </Modal>
