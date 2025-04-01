@@ -7,6 +7,7 @@ type CardProps<T extends object> = {
     header?: ReactNode;
     leftSection?: ReactNode;
     rightSection?: ReactNode;
+    onClick?: () => void;
 };
 
 const Card = <T extends object>({
@@ -15,11 +16,14 @@ const Card = <T extends object>({
     clickable,
     header,
     leftSection,
-    rightSection
+    rightSection,
+    onClick
 }: CardProps<T>) => {
     return (
         <div className={`bg-white shadow-md rounded-lg p-4 border border-gray-200 transform transition duration-300 
-            ${clickable ? "hover:scale-105 cursor-pointer" : ""}`}>
+            ${clickable ? "hover:scale-105 cursor-pointer" : ""}`}
+            onClick={clickable ? onClick : undefined}
+            >
             {header && <div className="pb-2">{header}</div>}
 
             {leftSection || rightSection ? (
