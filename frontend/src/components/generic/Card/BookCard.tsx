@@ -7,6 +7,7 @@ type Book = {
     author: string;
     ban_reason?: string;
     description?: string;
+    banned_by?: string;
   };
 
 // Define the type for the BookCard component's props
@@ -33,7 +34,7 @@ const BookCard = <T extends Book>({ data, renderFields }: BookCardProps<T>) => {
                 data={data}
                 renderFields={renderFields}
                 clickable={true}
-                onClick={(handleCardClick)} // Open the modal when the card is clicked
+                onClick={(handleCardClick)}
                 header={
                     <>
                         {"title" in data && typeof data.title === "string" && (
@@ -56,6 +57,9 @@ const BookCard = <T extends Book>({ data, renderFields }: BookCardProps<T>) => {
                 <p className="text-gray-600 text-sm mb-4">{data.description}</p>
                 <p className="text-gray-500 text-xs">
                     <span className="font-bold">Ban Reason:</span> {String(data.ban_reason)}
+                </p>
+                <p className="text-gray-500 text-xs">
+                    <span className="font-bold">Ban Reason:</span> {String(data.banned_by)}
                 </p>
             </Modal>
         </div>
