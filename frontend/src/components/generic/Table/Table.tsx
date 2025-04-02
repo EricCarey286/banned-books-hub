@@ -27,7 +27,7 @@ const Table: React.FC<TableProps> = ({ data, visibleColumns, headers = {} }) => 
                 <tr>
                     {visibleColumns.map((column) => (
                         <th key={column} style={{ border: "1px solid black", padding: "8px", textAlign: "left" }}>
-                            {headers[column] || column} {/* Display custom header or column name */}
+                            {headers[column] || column}
                         </th>
                     ))}
                 </tr>
@@ -37,7 +37,7 @@ const Table: React.FC<TableProps> = ({ data, visibleColumns, headers = {} }) => 
                     <tr key={rowIndex}>
                         {visibleColumns.map((column) => (
                             <td key={column} style={{ border: "1px solid black", padding: "8px" }}>
-                                {item[column] ?? "N/A"} {/* Show "N/A" if the value is missing */}
+                                {item[column] ?? "N/A"}
                             </td>
                         ))}
                     </tr>

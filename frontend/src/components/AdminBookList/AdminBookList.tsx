@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import PageButton from "../generic/Button/PageButton";
-import BookCard from "../generic/Card/BookCard";
-
-import './BookList.css'
+import Table from "../generic/Table/Table";
 
 const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
+
 interface Book {
     id: number;
     isbn: string;
@@ -19,9 +18,10 @@ interface Book {
 }
 interface BookListProps {
     apiUrl: string;
+    bookList: string;
 }
 
-const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
+const AdminBooksList: React.FC<BookListProps> = ({ apiUrl, bookList }) => {
 
     const [books, setBooks] = useState<Book[]>([]);
     const [myError, setMyError] = useState<string | null>(null);
@@ -34,7 +34,7 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await fetch(`${URL_PREFIX}://${apiUrl}/books?page=${pageNumber}`);
+                const response = await fetch(`${URL_PREFIX}://${apiUrl}/${bookList}?page=${pageNumber}`);
                 if (!response.ok) {
                     console.log('Fetch Books Error');
                     throw new Error(`Error: ${response.status} ${response.statusText}`);
@@ -55,7 +55,7 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
         };
 
         fetchBooks();
-    }, [pageNumber, apiUrl]);
+    }, [pageNumber, apiUrl, bookList]);
 
     function nextPage(action: string) {
         let nextPage = 0;
@@ -80,26 +80,26 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
     return (
         <>
             <div className="m-4">
-                <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Banned Books</h3>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white">{bookList} Books</h3>
                 {myError ? (
                     <p style={{ color: "red" }}>Error: {myError}</p>
                 ) : loading ? (
                     <p>Loading Books...</p>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-5 p-2">
-                        {books.map((item) => (
-                            <BookCard
-                            key={`bookList-${item.id}`}
-                            data={item}
-                            renderFields={(key: keyof Book, value: Book[keyof Book]) => (
-                              key !== "title" && key !== "author" && key !== "isbn" && key !== "description" && key !== "ban_reason" && key !== "banned_by" ? (
-                                <p key={key} className="text-gray-500 text-xs">
-                                  {key}: {String(value)}
-                                </p>
-                              ) : null
-                            )}
-                          />
-                        ))}
+                    <div>
+                        <Table
+                            data={books}
+                            visibleColumns={['id','title', 'author', 'description', 'banned_by', 'ban_reason', 'isbn']}
+                            headers={{
+                                id: "ID",
+                                title: "Titlle",
+                                author: "Author",
+                                description: "Description",
+                                banned_by: "Banned By",
+                                ban_reason: "Ban Reasoning",
+                                isbn: "ISBN",
+                            }} 
+                        />
                     </div>
                 )}
             </div>
@@ -111,4 +111,4 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
     );
 };
 
-export default BooksList; 
+export default AdminBooksList; 

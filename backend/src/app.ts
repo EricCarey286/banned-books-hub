@@ -1,9 +1,10 @@
-const http = require("http");
 import cors from "cors";
 import express from "express";
+const http = require("http");
 const app = express();
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import session from "express-session"
 import booksRouter from "./routes/bookRouter";
 import suggestedbookRouter from "./routes/suggestedBookRouter";
 import contactFormRouter from "./routes/contactFormRouter";
@@ -22,6 +23,31 @@ app.use(
     extended: true,
   })
 );
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET as string,
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: true },
+  })
+);
+
+declare module "express-session" {
+  interface SessionData {
+    isAuthenticated?: boolean;
+  }
+}
+
+// Authentication Middleware
+const authenticate = (req: Request, res: Response, next: NextFunction): void => {
+  if (req.session.isAuthenticated) {
+    next();
+    return;
+  }
+  
+  res.status(401).json({ message: "Unauthorized" });
+  return; 
+};
 
 //express-rate-limit for overload prevention
 const limiter = rateLimit({
@@ -41,16 +67,45 @@ app.use(limiter);
 app.use(helmet()); //helmet for security middleware
 app.use(cors(corsOptions));
 
+// Login Route
+app.post("/api/admin/login", (req: Request, res: Response): void => {
+  const { username, password } = req.body;
+
+  if (
+    username === process.env.ADMIN_USERNAME &&
+    password === process.env.ADMIN_PASSWORD
+  ) {
+    req.session.isAuthenticated = true;
+    res.json({ success: true, message: "Logged in successfully" });
+    return;
+  }
+
+  res.status(401).json({ message: "Invalid credentials" });
+});
+
+// Protected Admin Route
+app.get("/api/admin", authenticate, (req: Request, res: Response) => {
+  res.json({ message: "Welcome to the admin panel" });
+});
+
+// Logout Route
+app.post("/api/admin/logout", (req: Request, res: Response) => {
+  req.session.destroy(() => {
+    res.json({ success: true, message: "Logged out successfully" });
+  });
+});
+
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "success" });
 });
 
+//Route to each table
 app.use("/books", booksRouter);
 app.use("/suggested_books", suggestedbookRouter);
 app.use("/contact_form", contactFormRouter);
 
-/* Error handler middleware */
+//Error handler middleware
 app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
   const statusCode = err.statusCode || 500;
 

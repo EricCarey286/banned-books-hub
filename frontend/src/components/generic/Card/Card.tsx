@@ -20,7 +20,7 @@ const Card = <T extends object>({
     onClick
 }: CardProps<T>) => {
     return (
-        <div className={`bg-white shadow-md rounded-lg p-4 border border-gray-200 transform transition duration-300 
+        <div className={`bg-white shadow-md rounded-lg p-4 flex flex-col h-full border border-gray-200 transform transition duration-300 
             ${clickable ? "hover:scale-105 cursor-pointer" : ""}`}
             onClick={clickable ? onClick : undefined}
             >
