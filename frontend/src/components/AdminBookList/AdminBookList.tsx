@@ -19,22 +19,26 @@ interface Book {
 interface BookListProps {
     apiUrl: string;
     bookList: string;
+    authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
-const AdminBooksList: React.FC<BookListProps> = ({ apiUrl, bookList }) => {
+const AdminBooksList: React.FC<BookListProps> = ({ apiUrl, bookList,  authFetch }) => {
 
     const [books, setBooks] = useState<Book[]>([]);
     const [myError, setMyError] = useState<string | null>(null);
     const [pageNumber, setPageNumber] = useState<number>(1);
     const [loading, setLoading] = useState<boolean>(true);
     const [hasNextPage, setHasNextPage] = useState(true);
+    const [isVisible, setIsVisible] = useState(false);
 
+    let visibleColumns =[]
+    let headers = {}
 
     // Fetch data from the backend
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await fetch(`${URL_PREFIX}://${apiUrl}/${bookList}?page=${pageNumber}`);
+                const response = await authFetch(`${URL_PREFIX}://${apiUrl}/${bookList}?page=${pageNumber}`);
                 if (!response.ok) {
                     console.log('Fetch Books Error');
                     throw new Error(`Error: ${response.status} ${response.statusText}`);
@@ -55,7 +59,30 @@ const AdminBooksList: React.FC<BookListProps> = ({ apiUrl, bookList }) => {
         };
 
         fetchBooks();
-    }, [pageNumber, apiUrl, bookList]);
+    }, [pageNumber, apiUrl, bookList, authFetch]);
+
+    if (bookList == 'suggested_books' || bookList == 'books'){
+        visibleColumns= ['id','title', 'author', 'description', 'banned_by', 'ban_reason', 'isbn']
+        headers= {
+            id: "ID",
+            title: "Titlle",
+            author: "Author",
+            description: "Description",
+            banned_by: "Banned By",
+            ban_reason: "Ban Reasoning",
+            isbn: "ISBN",
+        } 
+    } else {
+        visibleColumns= ['id','name', 'email', 'message', 'created_on', 'updated_on']
+        headers= {
+            id: "ID",
+            name: "Name",
+            email: "Email",
+            message: "Message",
+            created_on: "Created On",
+            updated_on: "Updated On"
+        } 
+    }
 
     function nextPage(action: string) {
         let nextPage = 0;
@@ -80,32 +107,35 @@ const AdminBooksList: React.FC<BookListProps> = ({ apiUrl, bookList }) => {
     return (
         <>
             <div className="m-4">
-                <h3 className="text-xl font-semibold text-gray-800 dark:text-white">{bookList} Books</h3>
-                {myError ? (
-                    <p style={{ color: "red" }}>Error: {myError}</p>
-                ) : loading ? (
-                    <p>Loading Books...</p>
-                ) : (
-                    <div>
-                        <Table
-                            data={books}
-                            visibleColumns={['id','title', 'author', 'description', 'banned_by', 'ban_reason', 'isbn']}
-                            headers={{
-                                id: "ID",
-                                title: "Titlle",
-                                author: "Author",
-                                description: "Description",
-                                banned_by: "Banned By",
-                                ban_reason: "Ban Reasoning",
-                                isbn: "ISBN",
-                            }} 
-                        />
-                    </div>
-                )}
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white">{bookList} List</h3>
+                <button 
+                    onClick={() => setIsVisible(!isVisible)} 
+                    style={{ all: "unset" }}
+                    className="!text-white-400 !underline !hover:text-blue-700"
+                >
+                    Toggle List
+                </button>
             </div>
-            <div className='book-container'>
-                <PageButton onClick={() => nextPage('prev')} action='prev' disabled={pageNumber === 1} currentPage={pageNumber} />
-                <PageButton onClick={() => nextPage('next')} action='next' disabled={!hasNextPage} currentPage={pageNumber} />
+            <div className={`mt-4 p-4rounded ${isVisible ? "" : "hidden"}`}>
+                <div className="m-4">
+                    {myError ? (
+                        <p style={{ color: "red" }}>Error: {myError}</p>
+                    ) : loading ? (
+                        <p>Loading Records...</p>
+                    ) : (
+                        <div>
+                            <Table
+                                data={books}
+                                visibleColumns={visibleColumns}
+                                headers={headers} 
+                            />
+                        </div>
+                    )}
+                </div>
+                <div className='book-container'>
+                    <PageButton onClick={() => nextPage('prev')} action='prev' disabled={pageNumber === 1} currentPage={pageNumber} />
+                    <PageButton onClick={() => nextPage('next')} action='next' disabled={!hasNextPage} currentPage={pageNumber} />
+                </div>
             </div>
         </>
     );

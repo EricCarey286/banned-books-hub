@@ -3,7 +3,12 @@ import Form from "../generic/Form/Form";
 
 const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
 
-const AddBookForm: React.FC<{ apiUrl: string }> = ({ apiUrl }) => {
+interface AddBookFormProps {
+  apiUrl: string;
+  authFetch: (url: string, options?: RequestInit) => Promise<Response>;
+}
+
+const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
   const fields = [
     {
       name: "action",
@@ -81,7 +86,7 @@ const AddBookForm: React.FC<{ apiUrl: string }> = ({ apiUrl }) => {
     let response;
     switch (values.action) {
       case "add":
-        response = await fetch(`${URL_PREFIX}://${apiUrl}/books`, {
+        response = await authFetch(`${URL_PREFIX}://${apiUrl}/books`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
