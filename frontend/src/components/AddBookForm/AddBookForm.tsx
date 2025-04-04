@@ -21,7 +21,18 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
         { value: "delete", label: "Delete" },
       ],
     },
-    { name: "isbn", label: "ISBN", type: "text" },
+    {
+      name: "id",
+      label: "ID",
+      type: "text",
+      conditional: (values: Record<string, string>) => values.action === "delete",
+    },
+    {
+      name: "isbn",
+      label: "ISBN",
+      type: "text",
+      conditional: (values: Record<string, string>) => values.action !== "delete",
+    },
     {
       name: "title",
       label: "Title",
@@ -56,6 +67,7 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
 
   const initialValues = {
     action: "",
+    id: "",
     isbn: "",
     title: "",
     author: "",
@@ -67,7 +79,11 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
   const validateForm = (values: Record<string, string>) => {
     const errors: string[] = [];
 
-    if (values.action !== "update" && values.action !== "delete") {
+    if (values.action === "delete" && !values.id.trim()) {
+      errors.push("ID is required for deletion.");
+    }
+
+    if (values.action !== "delete") {
       Object.entries(values).forEach(([key, value]) => {
         if (!value.trim() && key !== "action") {
           errors.push(`${key.replace("_", " ")} is required`);
@@ -95,7 +111,7 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
         });
         break;
       case "delete":
-        response = await fetch(`${URL_PREFIX}://${apiUrl}/books/${values.isbn}`, {
+        response = await fetch(`${URL_PREFIX}://${apiUrl}/books/id:${values.id}`, {
           method: "DELETE",
         });
         break;

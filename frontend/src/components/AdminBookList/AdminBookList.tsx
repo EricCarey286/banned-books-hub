@@ -107,16 +107,14 @@ const AdminBooksList: React.FC<BookListProps> = ({ apiUrl, bookList,  authFetch 
     return (
         <>
             <div className="m-4">
-                <h3 className="text-xl font-semibold text-gray-800 dark:text-white">{bookList} List</h3>
                 <button 
                     onClick={() => setIsVisible(!isVisible)} 
-                    style={{ all: "unset" }}
-                    className="!text-white-400 !underline !hover:text-blue-700"
+                    className="text-white-400 hover:text-blue-700"
                 >
                     Toggle List
                 </button>
             </div>
-            <div className={`mt-4 p-4rounded ${isVisible ? "" : "hidden"}`}>
+            <div className={`mt-4 p-4rounded ${isVisible ? "" : "invisible h-0"}`}>
                 <div className="m-4">
                     {myError ? (
                         <p style={{ color: "red" }}>Error: {myError}</p>

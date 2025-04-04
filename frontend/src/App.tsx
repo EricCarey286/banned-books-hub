@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import './App.css';
 import BookList from './components/BookList/BookList';
 import FeaturedBook from './components/FeaturedBook/FeaturedBook';
@@ -23,10 +23,10 @@ function AppContent() {
   const getAuthToken = () => localStorage.getItem("authToken");
   
   // Helper function to get authorization headers
-  const getAuthHeaders = () => {
-    const token = getAuthToken();
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
+  const getAuthHeaders = useCallback(() => {
+    const token = localStorage.getItem("authToken");
+    return token ? { Authorization: `Bearer ${token}` } : {Authorization: `Bearer Empty`};
+  }, []);
   
   useEffect(() => {
     if (!API_URL || !URL_PREFIX) {
@@ -46,7 +46,7 @@ function AppContent() {
         // Validate the token with the backend
         const response = await fetch(`${URL_PREFIX}://${API_URL}/api/admin/validate`, { 
           method: "GET",
-          headers: getAuthHeaders()
+          headers: getAuthHeaders(),
         });
   
         if (response.ok) {
@@ -105,11 +105,12 @@ function AppContent() {
 
   // Function to make authenticated requests
   const authFetch = async (url: string, options: RequestInit = {}) => {
+    const authHeaders = getAuthHeaders();
     const headers = {
       ...options.headers,
-      ...getAuthHeaders()
+      ...(authHeaders.Authorization ? authHeaders : {}), // Only add if Authorization exists
     };
-    
+  
     return fetch(url, { ...options, headers });
   };
 
