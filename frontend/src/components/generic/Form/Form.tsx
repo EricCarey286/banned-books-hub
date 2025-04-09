@@ -95,9 +95,9 @@ const Form: React.FC<FormProps> = ({ title, fields, initialValues, validate, onS
       {errors.length > 0 && (
         <div className="mt-4 p-4 bg-red-100 border border-red-300 rounded-md">
           <strong className="block text-red-700 font-semibold">Errors:</strong>
-          <ul className="list-disc pl-5">
+          <ul className="list-none pl-5">
             {errors.map((error, index) => (
-              <li key={index}>{error}</li>
+              <li key={index} className="!text-gray-600">{error}</li>
             ))}
           </ul>
         </div>
