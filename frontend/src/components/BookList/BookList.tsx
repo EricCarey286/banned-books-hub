@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import PageButton from "../generic/Button/PageButton";
 import BookCard from "../generic/Card/BookCard";
 
-import './BookList.css'
-
 const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
 interface Book {
     id: number;
@@ -103,7 +101,7 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
                     </div>
                 )}
             </div>
-            <div className='book-container'>
+            <div className='flex justify-between items-center'>
                 <PageButton onClick={() => nextPage('prev')} action='prev' disabled={pageNumber === 1} currentPage={pageNumber} />
                 <PageButton onClick={() => nextPage('next')} action='next' disabled={!hasNextPage} currentPage={pageNumber} />
             </div>

@@ -1,6 +1,5 @@
 import React from "react";
 import { useEffect } from "react";
-import './PageButton.css';
 
 interface PageButtonProps {
   onClick: () => void;
@@ -18,7 +17,6 @@ const PageButton: React.FC<PageButtonProps> = ({ onClick, action, disabled, curr
     <button
       onClick={onClick}
       disabled={disabled}
-      className={'page-button'}
     >
       {`${action} page`}
     </button>
