@@ -126,7 +126,7 @@ function AppContent() {
             <FeaturedBook apiUrl={API_URL} />
             <BookList apiUrl={API_URL} />
             <SuggestBookForm apiUrl={API_URL} />
-            <ContactForm apiUrl={API_URL} />
+            <ContactForm apiUrl={API_URL} authFetch={authFetch}/>
           </>
         }
       />
