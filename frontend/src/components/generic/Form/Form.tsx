@@ -2,7 +2,13 @@ import React, { useState } from "react";
 
 interface FormProps {
   title: string;
-  fields: { name: string; label: string; type: string; options?: { label: string; value: string }[] }[]; // Added 'options' for select fields
+  fields: {
+    name: string;
+    label: string;
+    type: string;
+    options?: { label: string; value: string }[];
+    conditional?: (values: Record<string, string>) => boolean;
+  }[];
   initialValues: Record<string, string>;
   validate?: (values: Record<string, string>) => string[];
   onSubmit: (values: Record<string, string>) => Promise<void>;
@@ -50,43 +56,45 @@ const Form: React.FC<FormProps> = ({ title, fields, initialValues, validate, onS
     <div className="max-w-2xl mx-auto bg-white shadow-md rounded-lg p-6 border border-gray-200 mt-10">
       <h2 className="text-2xl font-semibold text-gray-800 text-center">{title}</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {fields.map(({ name, label, type, options }) => (
-          <div key={name} className="flex flex-col">
-            <label htmlFor={name} className="text-sm font-medium text-gray-700">{label}</label>
-            {type === "textarea" ? (
-              <textarea
-                name={name}
-                id={name}
-                value={formData[name]}
-                onChange={handleChange}
-                className="mt-1 p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300"
-              />
-            ) : type === "select" ? (
-              <select
-                name={name}
-                id={name}
-                value={formData[name]}
-                onChange={handleChange}
-                className="mt-1 p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300"
-              >
-                {options?.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <input
-                type={type}
-                name={name}
-                id={name}
-                value={formData[name]}
-                onChange={handleChange}
-                className="mt-1 p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300"
-              />
-            )}
-          </div>
-        ))}
+        {fields
+          .filter((field) => !field.conditional || field.conditional(formData))
+          .map(({ name, label, type, options }) => (
+            <div key={name} className="flex flex-col">
+              <label htmlFor={name} className="text-sm font-medium text-gray-700">{label}</label>
+              {type === "textarea" ? (
+                <textarea
+                  name={name}
+                  id={name}
+                  value={formData[name]}
+                  onChange={handleChange}
+                  className="mt-1 p-2 border border-gray-300 rounded-md text-gray-700 focus:ring focus:ring-blue-300"
+                />
+              ) : type === "select" ? (
+                <select
+                  name={name}
+                  id={name}
+                  value={formData[name]}
+                  onChange={handleChange}
+                  className="mt-1 p-2 border border-gray-300 rounded-md text-gray-700 focus:ring focus:ring-blue-300"
+                >
+                  {options?.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type={type}
+                  name={name}
+                  id={name}
+                  value={formData[name]}
+                  onChange={handleChange}
+                  className="mt-1 p-2 border border-gray-300 rounded-md text-gray-700 focus:ring focus:ring-blue-300"
+                />
+              )}
+            </div>
+          ))}
         <button type="submit" className="w-full py-2 px-4 rounded-md transition">
           Submit
         </button>

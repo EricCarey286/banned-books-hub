@@ -85,14 +85,14 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
 
     if (values.action !== "delete") {
       Object.entries(values).forEach(([key, value]) => {
-        if (!value.trim() && key !== "action") {
+        if (!value.trim() && key !== "action" && value.trim() !== 'id') {
           errors.push(`${key.replace("_", " ")} is required`);
         }
       });
     }
 
-    if (values.isbn && !/^\d{10}$/.test(values.isbn)) {
-      errors.push("ISBN must be a valid 10-digit number.");
+    if (values.isbn && !/^(?:\d{10}|\d{13})$/.test(values.isbn)) {
+      errors.push("ISBN must be a valid 10 or 13 digit number.");
     }
 
     return errors;
