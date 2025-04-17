@@ -15,7 +15,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ handleLogout, apiUrl, u
                 <h1 className="text-2xl font-bold">Admin Dashboard</h1>
                 <div className="flex items-center gap-4 m-auto">
                     {username && <span>Welcome, {username}</span>}
-                    <button 
+                    <button
                         onClick={handleLogout}
                         className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                     >
@@ -24,23 +24,23 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ handleLogout, apiUrl, u
                 </div>
             </div>
 
-            <div className="grid gap-6 w-full">
-                <section className="border p-4 rounded-lg shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                <section className="border p-4 rounded-lg shadow-sm md:col-span-2">
                     <h2 className="text-xl font-semibold mb-4">Suggested Books</h2>
                     <AdminBooksList apiUrl={apiUrl} bookList="suggested_books" authFetch={authFetch} />
                 </section>
 
-                <section className="border p-4 rounded-lg shadow-sm">
+                <section className="border p-4 rounded-lg shadow-sm md:col-span-2">
                     <h2 className="text-xl font-semibold mb-4">Contact Form Submissions</h2>
                     <AdminBooksList apiUrl={apiUrl} bookList="contact_form" authFetch={authFetch} />
                 </section>
 
-                <section className="border p-4 rounded-lg shadow-sm">
+                <section className="border p-4 rounded-lg shadow-sm md:col-span-2">
                     <h2 className="text-xl font-semibold mb-4">Book Library</h2>
                     <AdminBooksList apiUrl={apiUrl} bookList="books" authFetch={authFetch} />
                 </section>
 
-                <section className="p-4 -lg">
+                <section className="border p-4 rounded-lg shadow-sm md:col-span-2">
                     <AddBookForm apiUrl={apiUrl} authFetch={authFetch} />
                 </section>
             </div>

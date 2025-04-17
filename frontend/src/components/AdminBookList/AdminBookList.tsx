@@ -22,7 +22,7 @@ interface BookListProps {
     authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
-const AdminBooksList: React.FC<BookListProps> = ({ apiUrl, bookList,  authFetch }) => {
+const AdminBooksList: React.FC<BookListProps> = ({ apiUrl, bookList, authFetch }) => {
 
     const [books, setBooks] = useState<Book[]>([]);
     const [myError, setMyError] = useState<string | null>(null);
@@ -31,7 +31,7 @@ const AdminBooksList: React.FC<BookListProps> = ({ apiUrl, bookList,  authFetch 
     const [hasNextPage, setHasNextPage] = useState(true);
     const [isVisible, setIsVisible] = useState(false);
 
-    let visibleColumns =[]
+    let visibleColumns = []
     let headers = {}
 
     // Fetch data from the backend
@@ -61,9 +61,9 @@ const AdminBooksList: React.FC<BookListProps> = ({ apiUrl, bookList,  authFetch 
         fetchBooks();
     }, [pageNumber, apiUrl, bookList, authFetch]);
 
-    if (bookList == 'suggested_books' || bookList == 'books'){
-        visibleColumns= ['id','title', 'author', 'description', 'banned_by', 'ban_reason', 'isbn']
-        headers= {
+    if (bookList == 'suggested_books' || bookList == 'books') {
+        visibleColumns = ['id', 'title', 'author', 'description', 'banned_by', 'ban_reason', 'isbn']
+        headers = {
             id: "ID",
             title: "Titlle",
             author: "Author",
@@ -71,17 +71,17 @@ const AdminBooksList: React.FC<BookListProps> = ({ apiUrl, bookList,  authFetch 
             banned_by: "Banned By",
             ban_reason: "Ban Reasoning",
             isbn: "ISBN",
-        } 
+        }
     } else {
-        visibleColumns= ['id','name', 'email', 'message', 'created_on', 'updated_on']
-        headers= {
+        visibleColumns = ['id', 'name', 'email', 'message', 'created_on', 'updated_on']
+        headers = {
             id: "ID",
             name: "Name",
             email: "Email",
             message: "Message",
             created_on: "Created On",
             updated_on: "Updated On"
-        } 
+        }
     }
 
     function nextPage(action: string) {
@@ -107,32 +107,44 @@ const AdminBooksList: React.FC<BookListProps> = ({ apiUrl, bookList,  authFetch 
     return (
         <>
             <div className="m-4">
-                <button 
-                    onClick={() => setIsVisible(!isVisible)} 
-                    className="text-white-400 hover:text-blue-700"
+                <button
+                    onClick={() => setIsVisible(!isVisible)}
+                    className="text-blue-600 hover:text-blue-800 font-medium transition"
                 >
                     Toggle List
                 </button>
             </div>
-            <div className={`mt-4 p-4rounded ${isVisible ? "" : "invisible h-0"}`}>
+
+            <div className={`transition-all duration-300 ${isVisible ? "mt-4 p-4 rounded" : "invisible h-0 overflow-hidden"}`}>
                 <div className="m-4">
                     {myError ? (
-                        <p style={{ color: "red" }}>Error: {myError}</p>
+                        <p className="text-red-500">Error: {myError}</p>
                     ) : loading ? (
                         <p>Loading Records...</p>
                     ) : (
-                        <div>
+                        <div className="overflow-x-auto">
                             <Table
                                 data={books}
                                 visibleColumns={visibleColumns}
-                                headers={headers} 
+                                headers={headers}
                             />
                         </div>
                     )}
                 </div>
-                <div className='book-container'>
-                    <PageButton onClick={() => nextPage('prev')} action='prev' disabled={pageNumber === 1} currentPage={pageNumber} />
-                    <PageButton onClick={() => nextPage('next')} action='next' disabled={!hasNextPage} currentPage={pageNumber} />
+
+                <div className="flex flex-col sm:flex-row gap-2 justify-center items-center mt-4">
+                    <PageButton
+                        onClick={() => nextPage('prev')}
+                        action='prev'
+                        disabled={pageNumber === 1}
+                        currentPage={pageNumber}
+                    />
+                    <PageButton
+                        onClick={() => nextPage('next')}
+                        action='next'
+                        disabled={!hasNextPage}
+                        currentPage={pageNumber}
+                    />
                 </div>
             </div>
         </>
