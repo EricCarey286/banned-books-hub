@@ -85,7 +85,7 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
 
     if (values.action !== "delete") {
       Object.entries(values).forEach(([key, value]) => {
-        if (!value.trim() && key !== "action" && value.trim() !== 'id') {
+        if (!value.trim() && key !== "action" && key !== "id") {
           errors.push(`${key.replace("_", " ")} is required`);
         }
       });
