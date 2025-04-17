@@ -109,11 +109,22 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
           },
           body: JSON.stringify([values]),
         });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to add book.");
+        }
         break;
       case "delete":
-        response = await fetch(`${URL_PREFIX}://${apiUrl}/books/id:${values.id}`, {
+        response = await fetch(`${URL_PREFIX}://${apiUrl}/books/${values.id}`, {
           method: "DELETE",
         });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.log(errorData)
+          throw new Error(errorData.message || "Failed to delete book.");
+        }
         break;
       case "update":
         response = await fetch(`${URL_PREFIX}://${apiUrl}/books/${values.isbn}`, {
@@ -123,14 +134,14 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
           },
           body: JSON.stringify(values),
         });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to update book.");
+        }
         break;
       default:
         throw new Error("Invalid action.");
-    }
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to update book.");
     }
   };
 
