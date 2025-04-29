@@ -75,7 +75,7 @@ const ContactForm: React.FC<ContactFormProps> = ({ apiUrl, authFetch }) => {
     }
   };
 
-  return <Form title="Add a new Book" fields={fields} initialValues={initialValues} validate={validateForm} onSubmit={handleSubmit} />;
+  return <Form title="Contact Us" fields={fields} initialValues={initialValues} validate={validateForm} onSubmit={handleSubmit} />;
 };
 
 export default ContactForm;
