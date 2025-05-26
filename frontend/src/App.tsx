@@ -8,6 +8,10 @@ import ContactForm from './components/ContactForm/ContactForm';
 import AdminLogin from './components/AdminLogin/AdminLogin';
 import AdminDashboard from './components/AdminDashboard/AdminDashboard';
 
+import ReactGA from 'react-ga4';
+const TRACKING_ID = "G-SFFY2DBJ1B";
+ReactGA.initialize(TRACKING_ID);
+
 const API_URL = import.meta.env.VITE_API_URL; //backend URL
 const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
 
@@ -163,6 +167,15 @@ function AppContent() {
 }
 
 function App() {
+  const location = useLocation();
+  useEffect(() => {
+    ReactGA.send({
+      hitType: 'pageview',
+      page: location.pathname + location.search + location.hash,
+      title: document.title,
+      location: window.location.href,
+    });
+  }, [location]);
   return (
     <Router>
       <AppContent />
