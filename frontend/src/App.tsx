@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import './App.css';
 import BookList from './components/BookList/BookList';
@@ -168,6 +168,7 @@ function AppContent() {
 
 function App() {
   const location = useLocation();
+  //Effect for Google Analytics plugin
   useEffect(() => {
     ReactGA.send({
       hitType: 'pageview',
@@ -177,9 +178,7 @@ function App() {
     });
   }, [location]);
   return (
-    <Router>
       <AppContent />
-    </Router>
   );
 }
 
