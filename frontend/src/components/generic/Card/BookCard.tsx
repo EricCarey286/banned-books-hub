@@ -65,7 +65,7 @@ const BookCard = <T extends Book>({ data, renderFields }: BookCardProps<T>) => {
                     <span className="font-bold">Ban Reason:</span> {String(data.ban_reason)}
                 </p>
                 <p className="text-gray-500 text-sm">
-                    <span className="font-bold">Ban Reason:</span> {String(data.banned_by)}
+                    <span className="font-bold">Banned By:</span> {String(data.banned_by)}
                 </p>
             </Modal>
         </div>
