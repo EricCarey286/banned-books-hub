@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Card from "./Card";
 import Modal from "../Button/Modal";
+import reactImg from "/Users/ericwork/banned-books-app/banned-books-hub/frontend/src/assets/react.svg";
 
 interface Book {
     id: number;
@@ -36,7 +37,6 @@ const BookCard = <T extends Book>({ data, renderFields }: BookCardProps<T>) => {
      * Handles card click by logging a message and opening a modal.
      */
     const handleCardClick = () => {
-        console.log('here')
         setIsModalOpen(true);
     };
 
@@ -56,6 +56,7 @@ const BookCard = <T extends Book>({ data, renderFields }: BookCardProps<T>) => {
                 onClick={(handleCardClick)}
                 header={
                     <>
+                        <img src={reactImg} className="mx-auto pb-2"></img>
                         {"title" in data && typeof data.title === "string" && (
                             <h2 className="text-gray-600 text-lg font-semibold">{data.title}</h2>
                         )}
