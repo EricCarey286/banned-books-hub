@@ -28,8 +28,8 @@ export async function getMultiple(page: number = 1) {
     ]);
     const data = emptyOrRows(rows);
 
-    const books = data[0].slice(0, limit); // Keep only 10 books
-    const hasNextPage = data[0].length > limit; // If 11 books, there is another page
+    const books = data[0].slice(0, limit); // Keep only certain # of books based on config limits
+    const hasNextPage = data[0].length > limit; // If more than limit # of books, there is another page
 
     return {
       data: books,

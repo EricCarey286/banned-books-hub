@@ -59,7 +59,7 @@ const FeaturedBook: React.FC<BookListProps> = ({ apiUrl }) => {
             {myError ? (
                 <p className="text-red-500 text-center">Error: {myError}</p>
             ) : loading ? (
-                <p className="text-center">Loading Books...</p>
+                <p className="text-center">Selecting featured book...</p>
             ) : (
                 <div className="flex flex-wrap justify-center gap-6 p-4">
                     {books.map((item) => (

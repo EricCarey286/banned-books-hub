@@ -82,22 +82,32 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
                 {myError ? (
                     <p style={{ color: "red" }}>Error: {myError}</p>
                 ) : loading ? (
-                    <p>Loading Books...</p>
+                    <p>Please wait while we gather the latest books...</p>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-5 gap-5 p-2">
-                        {books.map((item) => (
-                            <BookCard
-                            key={`bookList-${item.id}`}
-                            data={item}
-                            renderFields={(key: keyof Book, value: Book[keyof Book]) => (
-                              key !== "title" && key !== "author" && key !== "isbn" && key !== "description" && key !== "ban_reason" && key !== "banned_by" ? (
-                                <p key={key} className="text-gray-500 text-xs">
-                                  {key}: {String(value)}
-                                </p>
-                              ) : null
-                            )}
-                          />
-                        ))}
+                        {(() => {
+                            const excludedKeys: (keyof Book)[] = [
+                                "title",
+                                "author",
+                                "isbn",
+                                "description",
+                                "ban_reason",
+                                "banned_by",
+                            ];
+                            return books.map((item) => (
+                                <BookCard
+                                    key={`bookList-${item.id}`}
+                                    data={item}
+                                    renderFields={(key: keyof Book, value: Book[keyof Book]) =>
+                                        !excludedKeys.includes(key) ? (
+                                            <p key={key} className="text-gray-500 text-xs">
+                                                {key}: {String(value)}
+                                            </p>
+                                        ) : null
+                                    }
+                                />
+                            ));
+                        })()}
                     </div>
                 )}
             </div>
