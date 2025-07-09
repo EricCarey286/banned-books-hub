@@ -3,6 +3,16 @@ import Form from "../generic/Form/Form";
 
 const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
 
+/**
+ * SuggestBookForm component to render a form for suggesting banned books.
+ *
+ * This component renders a form with fields for book title, ISBN, author,
+ * description, banned by, and ban reason. It includes validation for the ISBN
+ * field to ensure it is a 10-digit number. The form data is submitted via an API call
+ * to suggest a new banned book.
+ *
+ * @param apiUrl - The base URL of the API endpoint to submit suggested books.
+ */
 const SuggestBookForm: React.FC<{ apiUrl: string }> = ({ apiUrl }) => {
   const fields = [
     { name: "title", label: "Title", type: "text" },
@@ -22,6 +32,9 @@ const SuggestBookForm: React.FC<{ apiUrl: string }> = ({ apiUrl }) => {
     banned_by: "",
   };
 
+  /**
+   * Validates form fields and returns an array of error messages.
+   */
   const validateForm = (values: Record<string, string>) => {
     const errors: string[] = [];
     if (values.isbn && !/^\d{10}$/.test(values.isbn)) {
@@ -30,6 +43,9 @@ const SuggestBookForm: React.FC<{ apiUrl: string }> = ({ apiUrl }) => {
     return errors;
   };
 
+  /**
+   * Submits suggested books data to the server.
+   */
   const handleSubmit = async (values: Record<string, string>) => {
     const response = await fetch(`${URL_PREFIX}://${apiUrl}/suggested_books`, {
       method: "POST",

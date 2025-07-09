@@ -19,9 +19,19 @@ interface TableProps {
   headers?: Record<string, string>;
 }
 
+/**
+ * Renders a customizable table component with expandable cells.
+ *
+ * This functional component takes in data, visible columns, and optional headers to render a table.
+ * It allows users to toggle the expansion of cell content by clicking on them.
+ * The component manages the state of expanded cells using React's useState hook.
+ */
 const Table: React.FC<TableProps> = ({ data, visibleColumns, headers = {} }) => {
   const [expandedCells, setExpandedCells] = useState<Record<string, boolean>>({});
 
+  /**
+   * Toggles the expanded state of a cell based on its row index and column.
+   */
   const toggleCell = (rowIndex: number, column: string) => {
     const key = `${rowIndex}-${column}`;
     setExpandedCells((prev) => ({
