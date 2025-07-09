@@ -1,7 +1,13 @@
+/**
+ * Calculates the offset based on the current page and items per page.
+ */
 export function getOffset(currentPage: number, listPerPage: number): number {
   return (currentPage - 1) * listPerPage;
 }
 
+/**
+ * Returns an empty array if input is falsy, otherwise returns the input array.
+ */
 export function emptyOrRows(rows: any[]): any[] {
   if (!rows) {
     return [];
