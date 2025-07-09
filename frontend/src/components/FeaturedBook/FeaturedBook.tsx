@@ -16,7 +16,7 @@ interface Book {
     [key: string]: string | number | null; // Index signature for dynamic access
 }
 interface BookListProps {
-    apiUrl: string; // The base URL of your backend API
+    apiUrl: string; // The base URL of the backend API
 }
 
 /**
@@ -59,9 +59,9 @@ const FeaturedBook: React.FC<BookListProps> = ({ apiUrl }) => {
             } catch (err: unknown) {
                 if (err instanceof Error) {
                     console.log(err.message);
-                    setMyError('An error occured while fetching the featured book. Please try again later.');
+                    setMyError('We are having trouble loading the latest books, please try again later!');
                 } else {
-                    setMyError("An unknown error occurred.");
+                    setMyError("We are having trouble loading the latest books, please try again later!");
                 }
             } finally {
                 setLoading(false);
@@ -75,7 +75,7 @@ const FeaturedBook: React.FC<BookListProps> = ({ apiUrl }) => {
         <div className="m-4 w-full max-w-7xl mx-auto">
             <h3 className="text-xl font-semibold text-gray-800 dark:text-white text-center">Featured Book</h3>
             {myError ? (
-                <p className="text-red-500 text-center">Error: {myError}</p>
+                <p className="text-yellow-500 text-center">{myError}</p>
             ) : loading ? (
                 <p className="text-center">Selecting featured book...</p>
             ) : (

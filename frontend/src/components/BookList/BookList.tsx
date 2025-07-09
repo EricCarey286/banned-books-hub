@@ -59,10 +59,10 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
                 setHasNextPage(data.meta.hasNextPage);
             } catch (err: unknown) {
                 if (err instanceof Error) {
-                    console.log(err.message);
-                    setMyError('An error occured while fetching the books. Please refresh or try again later.');
+                    console.log(`Error on /books fetch: ${err.message}`);
+                    setMyError('We are having trouble loading the latest books, please try again later!');
                 } else {
-                    setMyError("An unknown error occurred.");
+                    setMyError("We are having trouble loading the latest books, please try again later!");
                 }
             } finally {
                 setLoading(false);
@@ -96,7 +96,7 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
             }
         } catch (err) {
             console.log(`Error on nextPage action: ${err}`)
-            setMyError('An unexpected error occurred. Please refresh or try again later.');
+            setMyError('That wasn\'t supposed to happen. Please refresh or try again later.');
         }
     }
 
@@ -105,7 +105,7 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
             <div className="m-4">
                 <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Banned Books</h3>
                 {myError ? (
-                    <p style={{ color: "red" }}>Error: {myError}</p>
+                    <p className="text-yellow-500 text-center">{myError}</p>
                 ) : loading ? (
                     <p>Please wait while we gather the latest books...</p>
                 ) : (
