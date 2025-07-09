@@ -21,14 +21,28 @@ type BookCardProps<T extends Book> = {
     renderFields?: (key: keyof T, value: T[keyof T]) => React.ReactNode;
 };
 
+/**
+ * Renders a book card component that displays book information and can open a modal with detailed data.
+ *
+ * This component uses the `Card` and `Modal` components to display book details. It includes conditional rendering based on the presence of certain properties in the `data` object. The card is clickable, opening a modal with more detailed information about the book when clicked. The modal can be closed by clicking an 'X' button.
+ *
+ * @param data - The book data to be displayed.
+ * @param renderFields - A function that renders additional fields for the card.
+ */
 const BookCard = <T extends Book>({ data, renderFields }: BookCardProps<T>) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    /**
+     * Handles card click by logging a message and opening a modal.
+     */
     const handleCardClick = () => {
         console.log('here')
         setIsModalOpen(true);
     };
 
+    /**
+     * Closes the modal by setting `isModalOpen` to false.
+     */
     const closeModal = () => {
         setIsModalOpen(false);
     };

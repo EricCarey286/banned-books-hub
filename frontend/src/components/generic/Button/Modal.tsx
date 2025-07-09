@@ -7,6 +7,9 @@ type ModalProps = {
     children: React.ReactNode;
 };
 
+/**
+ * Renders a modal component with a title, children content, and a close button.
+ */
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
     if (!isOpen) return null;
 

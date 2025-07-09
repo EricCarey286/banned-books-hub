@@ -8,6 +8,9 @@ interface PageButtonProps {
   currentPage: number;
 }
 
+/**
+ * A button component for navigating pages, scrolling to the top on page change.
+ */
 const PageButton: React.FC<PageButtonProps> = ({ onClick, action, disabled, currentPage }) => {
   useEffect(() => {
     // Scroll to the top when currentPage changes
