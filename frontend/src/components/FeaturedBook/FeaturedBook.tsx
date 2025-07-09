@@ -19,6 +19,16 @@ interface BookListProps {
     apiUrl: string; // The base URL of your backend API
 }
 
+/**
+ * React component to display a featured book from the backend API.
+ *
+ * This component fetches featured books data from the provided API URL and displays it.
+ * It handles loading states and errors, displaying appropriate messages if the fetch fails or is still in progress.
+ * The component uses a functional component with hooks for state management and side effects.
+ *
+ * @param apiUrl - The API endpoint to fetch featured books.
+ * @returns JSX representing the featured book list or an error message.
+ */
 const FeaturedBook: React.FC<BookListProps> = ({ apiUrl }) => {
 
     const [books, setBooks] = useState<Book[]>([]);
@@ -28,6 +38,14 @@ const FeaturedBook: React.FC<BookListProps> = ({ apiUrl }) => {
 
     // Fetch data from the backend
     useEffect(() => {
+        /**
+         * Fetches featured books from the API and updates the state with the first book's data.
+         *
+         * This function makes an asynchronous GET request to the featured books endpoint.
+         * It handles successful responses by updating the `books` state with the first book's data.
+         * In case of an error, it logs the error message and updates the `myError` state with a user-friendly error message.
+         * The loading state is set to false in both success and failure scenarios.
+         */
         const fetchBooks = async () => {
             try {
                 const response = await fetch(`${URL_PREFIX}://${apiUrl}/books/featured`);
