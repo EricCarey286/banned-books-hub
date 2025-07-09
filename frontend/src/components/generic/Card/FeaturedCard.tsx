@@ -7,6 +7,15 @@ type FeaturedCardProps<T extends object> = {
     renderFields?: (key: keyof T, value: T[keyof T]) => ReactNode;
 };
 
+/**
+ * Renders a featured card component with conditional rendering of fields based on data properties.
+ *
+ * This component takes in generic data and renderFields props, then conditionally renders specific fields such as title, author, ISBN, description, ban reason, and banned by. It uses the Card component to structure the layout and passes relevant data to it.
+ *
+ * @param <T extends object> - A generic type that extends an object, ensuring that data is of a valid object shape.
+ * @param {FeaturedCardProps<T>} props - An object containing `data` and `renderFields`.
+ * @returns JSX element representing the featured card with conditionally rendered fields.
+ */
 const FeaturedCard = <T extends object>({ data, renderFields }: FeaturedCardProps<T>) => {
     return (
         <Card

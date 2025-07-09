@@ -14,11 +14,28 @@ interface FormProps {
   onSubmit: (values: Record<string, string>) => Promise<void>;
 }
 
+/**
+ * A React functional component that renders a form with dynamic fields and validation.
+ *
+ * This component manages form state, handles input changes, performs validation,
+ * and submits data to a provided callback function. It also displays error messages
+ * and success notifications.
+ *
+ * @param title - The title of the form displayed as a heading.
+ * @param fields - An array of field configurations defining the form's inputs.
+ * @param initialValues - An object containing initial values for the form fields.
+ * @param validate - A function to validate the form data, returning an array of errors.
+ * @param onSubmit - An asynchronous function to handle form submission with the form data.
+ * @returns A React component rendering the form interface.
+ */
 const Form: React.FC<FormProps> = ({ title, fields, initialValues, validate, onSubmit }) => {
   const [formData, setFormData] = useState(initialValues);
   const [errors, setErrors] = useState<string[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  /**
+   * Updates form data based on input change event.
+   */
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -29,6 +46,15 @@ const Form: React.FC<FormProps> = ({ title, fields, initialValues, validate, onS
     }));
   };
 
+  /**
+   * Handles form submission by preventing default event, validating data, and executing the submit callback.
+   *
+   * This function first prevents the default form submission behavior. It then resets any previous errors and success messages.
+   * If a validation function is provided, it checks for validation errors and sets them if found. If no errors are present,
+   * it attempts to submit the form data using the `onSubmit` callback. On successful submission, it shows a success message
+   * and resets the form data to initial values. If an error occurs during submission, it logs the error and sets a generic
+   * error message.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors([]);
