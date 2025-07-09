@@ -22,6 +22,17 @@ interface BookListProps {
     authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
+/**
+ * A React functional component that lists books or suggested books with pagination and error handling.
+ *
+ * This component fetches book data from an API using `authFetch` and displays it in a table format. It handles pagination,
+ * toggling visibility of the list, and displaying errors if they occur during data fetching.
+ *
+ * @param apiUrl - The base URL for the API endpoint.
+ * @param bookList - Specifies the type of book list to fetch ('suggested_books' or 'books').
+ * @param authFetch - A function used to make authenticated API requests.
+ * @returns JSX element representing the book list interface.
+ */
 const AdminBooksList: React.FC<BookListProps> = ({ apiUrl, bookList, authFetch }) => {
 
     const [books, setBooks] = useState<Book[]>([]);
@@ -36,6 +47,15 @@ const AdminBooksList: React.FC<BookListProps> = ({ apiUrl, bookList, authFetch }
 
     // Fetch data from the backend
     useEffect(() => {
+        /**
+         * Fetches a list of books from the API and updates the state with the results.
+         *
+         * This function makes an asynchronous request to fetch book data using the `authFetch` method.
+         * It constructs the request URL using the provided constants and parameters. If the response is not okay,
+         * it logs an error message and throws an exception with the status details. Upon successful retrieval of the data,
+         * it updates the books state and whether there is a next page available. In case of an error, it sets
+         * an appropriate error message in the state. Finally, regardless of the outcome, it stops loading.
+         */
         const fetchBooks = async () => {
             try {
                 const response = await authFetch(`${URL_PREFIX}://${apiUrl}/${bookList}?page=${pageNumber}`);
@@ -84,6 +104,17 @@ const AdminBooksList: React.FC<BookListProps> = ({ apiUrl, bookList, authFetch }
         }
     }
 
+    /**
+     * Handles navigation to the next or previous page based on the action provided.
+     *
+     * This function updates the current page number by incrementing or decrementing it,
+     * depending on whether the 'next' or 'prev' action is specified. It ensures that
+     * navigating to the previous page does not go below the first page (pageNumber 1).
+     * If an error occurs during this process, it logs the error and sets a generic
+     * error message.
+     *
+     * @param {string} action - The navigation action to perform ('next' or 'prev').
+     */
     function nextPage(action: string) {
         let nextPage = 0;
         try {
