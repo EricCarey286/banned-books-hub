@@ -8,6 +8,16 @@ interface AddBookFormProps {
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
+/**
+ * React functional component to render an AddBookForm.
+ *
+ * This component manages a form with various fields that are conditionally displayed based on the selected action (add, update, delete).
+ * It validates the input values and handles form submission by making appropriate API calls.
+ *
+ * @param apiUrl - The URL of the API endpoint for book operations.
+ * @param authFetch - A function to fetch data with authentication.
+ * @returns A React component that renders the AddBookForm.
+ */
 const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
   const fields = [
     {
@@ -76,6 +86,13 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
     banned_by: "",
   };
 
+  /**
+   * Validates form inputs based on specific rules and action types.
+   *
+   * The function checks for required fields, validates ISBN format,
+   * and ensures that necessary fields are present for different actions.
+   * It collects all validation errors in an array and returns it.
+   */
   const validateForm = (values: Record<string, string>) => {
     const errors: string[] = [];
 
@@ -98,6 +115,16 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
     return errors;
   };
 
+  /**
+   * Handles the submission of book-related actions by making HTTP requests to the server.
+   *
+   * Depending on the `action` value in the input `values`, it performs an HTTP POST, DELETE, or PUT request.
+   * The function checks the response status and throws an error with the server's error message if the request fails.
+   *
+   * @param values - An object containing the action type and relevant data for the operation (e.g., book details).
+   * @returns A promise that resolves when the HTTP request is successful.
+   * @throws Error If the HTTP request fails or if the action is invalid.
+   */
   const handleSubmit = async (values: Record<string, string>) => {
     let response;
     switch (values.action) {
