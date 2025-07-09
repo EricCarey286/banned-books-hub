@@ -10,10 +10,16 @@ export interface AdminLoginProps {
     error: string;
 }
 
+/**
+ * Admin login component that handles user input and form submission for admin authentication.
+ */
 const AdminLogin: React.FC<AdminLoginProps> = ({ handleLogin, error }) => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
+    /**
+     * Handles form submission by calling the login handler with event and credentials.
+     */
     const handleFormSubmit = (e: React.FormEvent) => {
         handleLogin(e, username, password);
     };

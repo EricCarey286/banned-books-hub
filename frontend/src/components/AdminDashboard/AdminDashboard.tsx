@@ -7,6 +7,9 @@ interface AdminDashboardProps {
     authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
+/**
+ * Renders the admin dashboard with sections for suggested books, contact form submissions, book library, and an add book form.
+ */
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ handleLogout, apiUrl, username, authFetch }) => {
 
     return (

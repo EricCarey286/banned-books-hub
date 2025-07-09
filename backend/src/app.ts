@@ -34,6 +34,15 @@ interface AuthRequest extends Request {
 }
 
 // Authentication Middleware using JWT
+/**
+ * Authenticates a user request by verifying the JWT token.
+ *
+ * This function extracts the JWT token from the Authorization header,
+ * verifies its authenticity using the secret key, and attaches the decoded
+ * payload to the request object if verification is successful. If the token
+ * is missing, invalid, or expired, it responds with an appropriate error status
+ * and message.
+ */
 const authenticate = (req: AuthRequest, res: Response, next: NextFunction): void => {
   try {
     // Get token from Authorization header

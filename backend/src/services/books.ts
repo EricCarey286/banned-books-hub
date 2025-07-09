@@ -14,6 +14,13 @@ interface Book {
 }
 
 //query multiple books per page
+/**
+ * Fetches a paginated list of books from the database.
+ *
+ * This function retrieves books using a stored procedure `sp_get_books`. It calculates the offset based on the page number
+ * and limit, then executes the query. The results are processed to determine if there is a next page available. If an error occurs,
+ * it logs the error and rethrows it.
+ */
 export async function getMultiple(page: number = 1) {
   const limit = DB_CONFIG.listPerPage;
   try {
@@ -42,6 +49,14 @@ export async function getMultiple(page: number = 1) {
 }
 
 //get a single book based on search criteria
+/**
+ * Searches for books based on a search term using a stored procedure.
+ *
+ * This function validates the input searchTerm, constructs a regex pattern,
+ * executes a stored procedure to fetch matching books, and returns the results.
+ * If the searchTerm is invalid, it throws an AppError. Errors during execution
+ * are logged and re-thrown.
+ */
 export async function getBook(searchTerm: string) {
   try {
     if (typeof searchTerm !== "string" || searchTerm.trim() === "") {
@@ -61,6 +76,13 @@ export async function getBook(searchTerm: string) {
 }
 
 //get a single featured book
+/**
+ * Fetches a featured book by executing a stored procedure and handling potential errors.
+ *
+ * This function attempts to retrieve featured books by invoking the `sp_search_for_featured` stored procedure.
+ * It processes the result using the `emptyOrRows` utility function. If successful, it returns an object containing
+ * the processed data. In case of an error during the execution, it logs the error and rethrows it for further handling.
+ */
 export async function getFeaturedBook() {
   try {
     const rows = await query(`CALL sp_search_for_featured`, []);
@@ -75,6 +97,18 @@ export async function getFeaturedBook() {
 }
 
 //create a book
+/**
+ * Create a new book entry in the database.
+ *
+ * This function validates the input `Book` object, checks for required fields and their formats,
+ * and then calls a stored procedure to insert the book into the database. It handles validation errors
+ * by throwing an `AppError` with details about the invalid fields. If the insertion is successful,
+ * it returns a success message; otherwise, it throws an error indicating creation failure.
+ *
+ * @param book - A Book object containing book details.
+ * @returns An object with a success message if the book is created successfully.
+ * @throws AppError If validation fails or the book creation fails in the database.
+ */
 export async function create(book: Book) {
   let invalidFields: any = [];
 
@@ -134,6 +168,19 @@ export async function create(book: Book) {
 }
 
 //update an existing book by id
+/**
+ * Update a book record with the given ID using the provided book data.
+ *
+ * Validates the input to ensure at least one field is provided and that all string fields are non-empty.
+ * Assigns `null` to missing fields to meet stored procedure requirements.
+ * Executes a SQL call to update the book in the database and returns a success message if successful.
+ * Throws an error if validation fails or if the update query fails.
+ *
+ * @param id - The ID of the book to be updated.
+ * @param book - An object containing the book data to update, including title, author, description, ban_reason, and banned_by.
+ * @returns A promise that resolves to an object with a success message if the update is successful.
+ * @throws AppError If validation fails or if the update query fails.
+ */
 export async function update(id: Number, book: Book) {
   try {
     // Validate the input: ensure at least one field is provided
@@ -206,6 +253,17 @@ export async function update(id: Number, book: Book) {
 }
 
 //remove an existing book by id
+/**
+ * Deletes a book by its ID using a stored procedure.
+ *
+ * The function calls a MySQL stored procedure `sp_delete_book` with the provided book ID.
+ * It checks the number of affected rows to determine if the deletion was successful.
+ * If no rows are affected, it throws an error indicating failure to delete the book.
+ *
+ * @param id - The ID of the book to be deleted.
+ * @returns An object containing a success message if the book is deleted successfully.
+ * @throws AppError If the book cannot be deleted or any other error occurs during execution.
+ */
 export async function remove(id: Number) {
   try {
     const result = await query("CALL sp_delete_book(?)", [id]);
@@ -228,6 +286,13 @@ export async function remove(id: Number) {
 }
 
 //remove multiple books
+/**
+ * Deletes multiple books by their IDs using a stored procedure.
+ * Validates that the input is a non-empty array, converts it to a comma-separated string,
+ * and executes the SQL delete operation through a stored procedure call.
+ *
+ * @param {number[]} ids - An array of book IDs to be deleted.
+ */
 export async function removeMultiple(ids: number[]) {
   try {
       if (!Array.isArray(ids) || ids.length === 0) {

@@ -14,6 +14,16 @@ interface Book {
 }
 
 //query multiple books per page
+/**
+ * Fetches multiple books based on the given page number.
+ *
+ * This function retrieves a list of suggested books from the database using a stored procedure.
+ * It calculates the offset based on the page and limit, executes the query, and processes the results.
+ * If the 'page' parameter is invalid, it throws an AppError. The function returns an object containing
+ * the list of books and metadata about pagination.
+ *
+ * @param {number} [page=1] - The page number for which to fetch books. Must be a positive integer.
+ */
 export async function getMultiple(page: number = 1) {
   const limit = DB_CONFIG.listPerPage;
     try {
@@ -42,6 +52,17 @@ export async function getMultiple(page: number = 1) {
 }
 
 //get a single book based on search criteria
+/**
+ * Searches for books using a given search term.
+ *
+ * This function first validates that the provided search term is a non-empty string.
+ * It then constructs a regex pattern from the search term and calls a stored procedure
+ * to fetch matching book suggestions. The results are processed to ensure they are not empty,
+ * and an object containing the data is returned. If any errors occur during this process,
+ * they are logged and rethrown.
+ *
+ * @param searchTerm - The string used to search for books. It must be a non-empty string.
+ */
 export async function getBook(searchTerm: string) {
   try {
     if (typeof searchTerm !== "string" || searchTerm.trim() === "") {
@@ -61,6 +82,18 @@ export async function getBook(searchTerm: string) {
 }
 
 //create a book
+/**
+ * Suggests a new book by inserting it into the database.
+ *
+ * This function validates the input book object and checks if required fields are present and correctly formatted.
+ * If validation fails, it throws an AppError with details of missing or invalid fields.
+ * It then attempts to insert the book into the database using a stored procedure.
+ * If the insertion is successful, it returns a success message; otherwise, it throws an error indicating failure.
+ *
+ * @param book - An object containing book details such as title, author, isbn, description, ban_reason, and banned_by.
+ * @returns An object with a message indicating the success or failure of the operation.
+ * @throws AppError If validation fails or if there is an issue inserting the book into the database.
+ */
 export async function suggest(book: Book) {
   let invalidFields: any = [];
 
@@ -111,6 +144,17 @@ export async function suggest(book: Book) {
 }
 
 //remove an existing suggested book by id
+/**
+ * Removes a book by its ID using a stored procedure.
+ *
+ * This function calls a MySQL stored procedure to delete a book record based on the provided ID.
+ * It checks the number of affected rows and returns a success message if the deletion is successful.
+ * If no rows are affected, it throws an error. Any errors during the execution are caught and rethrown.
+ *
+ * @param id - The numeric ID of the book to be deleted.
+ * @returns An object containing a success message if the book is successfully deleted.
+ * @throws AppError If the deletion fails or no rows are affected.
+ */
 export async function remove(id: Number) {
   try {
     const result = await query("CALL sp_delete_sugg_book(?)", [id]);
@@ -133,6 +177,13 @@ export async function remove(id: Number) {
 }
 
 //remove multiple suggested books by id
+/**
+ * Deletes multiple books by their IDs using a stored procedure.
+ * Validates that the input is a non-empty array, converts the array to a comma-separated string,
+ * and executes the SQL IN clause within the stored procedure.
+ *
+ * @param ids - An array of book IDs to be deleted.
+ */
 export async function removeMultiple(ids: number[]) {
   try {
     if (!Array.isArray(ids) || ids.length === 0) {

@@ -11,6 +11,16 @@ interface Form {
 }
 
 //query multiple books per page
+/**
+ * Fetches a paginated list of contact forms from the database.
+ *
+ * This function retrieves a specified number of contact forms based on the given page number.
+ * It calculates the offset and limit using the `getOffset` function and a predefined configuration.
+ * The function calls a stored procedure to fetch the data, processes it to determine if there is
+ * a next page, and returns the paginated results along with metadata.
+ *
+ * @param {number} [page=1] - The page number of the contact forms to retrieve. Must be a positive integer.
+ */
 export async function getMultiple(page: number = 1) {
   const limit = DB_CONFIG.listPerPage;
   try {
@@ -39,6 +49,17 @@ export async function getMultiple(page: number = 1) {
 }
 
 //get a single book based on search criteria
+/**
+ * Searches for forms based on a given search term.
+ *
+ * This function takes a search term as input, validates it to ensure it is a non-empty string,
+ * and then constructs a regex pattern with the search term. It calls a stored procedure to fetch
+ * matching forms and processes the result using `emptyOrRows`. The function returns an object
+ * containing the processed data. If any errors occur during this process, they are caught,
+ * logged, and rethrown.
+ *
+ * @param searchTerm - The string to search for forms. It must be a non-empty string.
+ */
 export async function getForm(searchTerm: string) {
   try {
     if (typeof searchTerm !== "string" || searchTerm.trim() === "") {
@@ -58,6 +79,17 @@ export async function getForm(searchTerm: string) {
 }
 
 //create a book
+/**
+ * Creates a new contact form entry in the database.
+ *
+ * This function validates the input form data, checks for required fields and their formats,
+ * and then inserts the data into the database using a stored procedure.
+ * If validation fails or the insertion fails, it throws an AppError with appropriate details.
+ *
+ * @param form - An object containing the form data to be created.
+ * @returns An object with a message indicating the success or failure of the operation.
+ * @throws AppError If required fields are missing, of invalid format, or if the database insertion fails.
+ */
 export async function create(form: Form) {
   let invalidFields: any = [];
 
