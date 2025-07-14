@@ -35,7 +35,28 @@ export async function getMultiple(page: number = 1) {
     ]);
     const data = emptyOrRows(rows);
 
-    const forms = data[0].slice(0, limit); // Keep only 10 forms
+    const forms = data[0].slice(0, limit).map((form: any) => {
+      return {
+        ...form,
+        created_on: form.created_on ? new Date(form.created_on).toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        }) : null,
+        updated_on: form.updated_on ? new Date(form.updated_on).toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        }) : null,
+      };
+    });
+
     const hasNextPage = data[0].length > limit; // If 11 forms, there is another page
 
     return {
@@ -112,9 +133,9 @@ export async function create(form: Form) {
     }
 
     const result = await query("CALL sp_insert_contactForm(?, ?, ?)", [
-        form.name,
-        form.email,
-        form.message,
+      form.name,
+      form.email,
+      form.message,
     ]);
 
     let message = "Error in creating form entry";
@@ -124,7 +145,7 @@ export async function create(form: Form) {
     if (affectedRows) {
       message = `New form created successfully`;
     } else {
-      throw new AppError("Creation failed", 501,{
+      throw new AppError("Creation failed", 501, {
         details: 'Form failed to create in database',
       });
     }
