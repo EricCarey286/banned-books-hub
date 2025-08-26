@@ -11,7 +11,7 @@ interface FormProps {
   }[];
   initialValues: Record<string, string>;
   validate?: (values: Record<string, string>) => string[];
-  onSubmit: (values: Record<string, string>) => Promise<void>;
+  onSubmit: (values: Record<string, string>, file?: File | null) => Promise<void>;
 }
 
 /**
@@ -30,6 +30,7 @@ interface FormProps {
  */
 const Form: React.FC<FormProps> = ({ title, fields, initialValues, validate, onSubmit }) => {
   const [formData, setFormData] = useState(initialValues);
+  const [file, setFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -69,9 +70,10 @@ const Form: React.FC<FormProps> = ({ title, fields, initialValues, validate, onS
     }
 
     try {
-      await onSubmit(formData);
+      await onSubmit(formData, file);
       setSuccessMessage("Form submitted successfully!");
       setFormData(initialValues);
+      setFile(null);
     } catch (err) {
       console.log(`Error in Form submit: ${err}`);
       setErrors(["An error occurred while submitting the form."]);
@@ -109,6 +111,29 @@ const Form: React.FC<FormProps> = ({ title, fields, initialValues, validate, onS
                     </option>
                   ))}
                 </select>
+              ) : type === "file" ? (
+                <div className="flex justify-center mt-2">
+                  <div className="flex flex-col items-center space-y-2 justify-center">
+                    <label
+                      htmlFor="image"
+                      className="bg-[#1a1a1a] text-[#fdfdfd] rounded border border-solid border-[#fdfdfd]
+                                px-5 py-2 text-base font-medium font-inherit cursor-pointer
+                                transition-colors duration-200 hover:border-[#999] hover:bg-[#4a5565]"
+                    >
+                      Upload Cover Image
+                    </label>
+                    {file && <p className="text-sm text-gray-500 mt-2">Selected: {file.name}</p>}
+                    <input
+                      id={name}
+                      name={name}
+                      type="file"
+                      onChange={(e) => {
+                        const selectedFile = e.target.files?.[0] || null;
+                        setFile(selectedFile);
+                      }}
+                    />
+                  </div>
+                </div>
               ) : (
                 <input
                   type={type}

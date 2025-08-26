@@ -8,6 +8,7 @@ import rateLimit from "express-rate-limit";
 import booksRouter from "./routes/bookRouter";
 import suggestedbookRouter from "./routes/suggestedBookRouter";
 import contactFormRouter from "./routes/contactFormRouter";
+import bookImageRouter from "./routes/imageRouter";
 
 import { PORT } from './utils/config';
 import { AppError } from "./utils/helper";
@@ -133,6 +134,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/books", booksRouter);
 app.use("/suggested_books", suggestedbookRouter);
 app.use("/contact_form", contactFormRouter);
+app.use("/book-image", bookImageRouter);
 
 //Error handler middleware
 app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {

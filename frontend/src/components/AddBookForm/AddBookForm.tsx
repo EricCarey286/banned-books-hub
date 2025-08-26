@@ -73,6 +73,12 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
       type: "text",
       conditional: (values: Record<string, string>) => values.action !== "delete",
     },
+    {
+      name: "image",
+      label: "Book Cover",
+      type: "file",
+      conditional: (values: Record<string, string>) => values.action !== "delete",
+    }
   ];
 
   const initialValues = {
@@ -125,10 +131,29 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
    * @returns A promise that resolves when the HTTP request is successful.
    * @throws Error If the HTTP request fails or if the action is invalid.
    */
-  const handleSubmit = async (values: Record<string, string>) => {
+  const uploadImage = async (file: File, isbn: string): Promise<{ message: string; fileName: string }> => {
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("isbn", isbn);
+
+    const res = await fetch("/book-image/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) throw new Error("Upload failed");
+
+    return res.json(); // { message, fileName }
+  }
+
+  const handleSubmit = async (values: Record<string, string>, file?: File | null) => {
     let response;
+
     switch (values.action) {
       case "add":
+        if (file && values.isbn) {
+          await uploadImage(file, values.isbn);
+        }
         response = await authFetch(`${URL_PREFIX}://${apiUrl}/books`, {
           method: "POST",
           headers: {
@@ -172,7 +197,13 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
     }
   };
 
-  return <Form title="Add a new Book" fields={fields} initialValues={initialValues} validate={validateForm} onSubmit={handleSubmit} />;
+  return <Form
+    title="Add a new Book"
+    fields={fields}
+    initialValues={initialValues}
+    validate={validateForm}
+    onSubmit={handleSubmit}
+  />;
 };
 
 export default AddBookForm;

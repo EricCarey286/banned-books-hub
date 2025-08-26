@@ -1,4 +1,5 @@
 require('dotenv').config();
+import { Client } from "minio";
 
 export const PORT = process.env.PORT;
 
@@ -11,4 +12,11 @@ export const DB_CONFIG = {
       port: process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 8080,
     },
     listPerPage: 15,
-  };
+};
+
+export const minioClient = new Client({
+  endPoint: "bucket-production-70f9.up.railway.app",
+  useSSL: true,
+  accessKey: process.env.MINIO_ACCESS_KEY!,
+  secretKey: process.env.MINIO_SECRET_KEY!,
+});
