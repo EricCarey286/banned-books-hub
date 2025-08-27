@@ -103,3 +103,48 @@ export async function create(form: Form) {
     throw err;
   }
 }
+
+//remove an existing form by id
+export async function remove(id: Number) {
+  try {
+    const result = await query("CALL sp_delete_form(?)", [id]);
+
+    let message = '';
+
+    const affectedRows = (result[0] as mysql.ResultSetHeader).affectedRows || 0;
+
+    if (affectedRows) {
+      message = `Contact form with id: ${id} deleted successfully`;
+      return { message };
+    } else {
+      throw new AppError(`Error deleting contact form with id: ${id}`, 501);
+    }
+
+  } catch (err: any) {
+    console.error("Error in remove:", err);
+    throw err;
+  }
+}
+
+//remove multiple forms
+export async function removeMultiple(ids: number[]) {
+  try {
+      if (!Array.isArray(ids) || ids.length === 0) {
+        throw new AppError("Invalid input: 'ids' must be a non-empty array", 400);
+      }
+  
+      // Convert array to a comma-separated string WITHOUT quotes (for SQL IN clause)
+      const idString = ids.join(",");
+  
+      // Call the stored procedure
+      const result = await query("CALL sp_delete_forms(?)", [idString]);
+  
+      return {
+        message: `Forms with IDs: ${ids.join(", ")} deleted successfully`
+      };
+  
+    } catch (err: any) {
+      console.error("Error in removeMultiple:", err);
+      throw err;
+    }
+}

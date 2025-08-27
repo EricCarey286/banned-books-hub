@@ -11,6 +11,7 @@ interface Book {
   description: String;
   ban_reason: String;
   banned_by: String;
+  cover_url: String;
 }
 
 //query multiple books per page
@@ -82,13 +83,14 @@ export async function suggest(book: Book) {
       });
     }
 
-    const result = await query("CALL sp_insert_suggested_book(?, ?, ?, ?, ?, ?)", [
+    const result = await query("CALL sp_insert_suggested_book(?, ?, ?, ?, ?, ?, ?)", [
       book.isbn,
       book.title,
       book.author,
       book.description,
       book.ban_reason,
       book.banned_by,
+      book.cover_url,
     ]);
 
     let message = "Error in creating suggetsed book entry";
