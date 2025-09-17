@@ -90,6 +90,7 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
     description: "",
     ban_reason: "",
     banned_by: "",
+    cover_url: ""
   };
 
   /**
@@ -108,7 +109,7 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
 
     if (values.action !== "delete") {
       Object.entries(values).forEach(([key, value]) => {
-        if (!value.trim() && key !== "action" && key !== "id") {
+        if (!value.trim() && key !== "action" && key !== "id" && key !== "cover_url") {
           errors.push(`${key.replace("_", " ")} is required`);
         }
       });
@@ -132,11 +133,12 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
    * @throws Error If the HTTP request fails or if the action is invalid.
    */
   const uploadImage = async (file: File, isbn: string): Promise<{ message: string; fileName: string }> => {
+    console.log('uploading image: ' + file);
     const formData = new FormData();
     formData.append("image", file);
     formData.append("isbn", isbn);
 
-    const res = await fetch("/book-image/upload", {
+    const res = await fetch(`${URL_PREFIX}://${apiUrl}/book-image/upload`, {
       method: "POST",
       body: formData,
     });
@@ -152,8 +154,15 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
     switch (values.action) {
       case "add":
         if (file && values.isbn) {
-          await uploadImage(file, values.isbn);
-        }
+          values.cover_url = `/book-image/${values.isbn}`
+          try {
+            const { fileName } = await uploadImage(file, values.isbn);
+            console.log(fileName);
+          } catch (err) {
+            console.log(err);
+            throw new Error("Failed to upload book. Please try again later");
+          }
+        };
         response = await authFetch(`${URL_PREFIX}://${apiUrl}/books`, {
           method: "POST",
           headers: {

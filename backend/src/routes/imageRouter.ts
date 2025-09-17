@@ -1,13 +1,17 @@
 const expressRouter = require('express');
 import { Request, Response, NextFunction } from "express";
+import { AppError } from '../utils/helper';
 const bookImageRouter = expressRouter.Router();
 import multer from "multer";
 import { minioClient } from "../utils/config";
 
-const upload = multer({ storage: multer.memoryStorage() });
+import * as fs from 'fs'
+import * as path from 'path'
 
-bookImageRouter.post("/upload", upload.single("image"), async function(req: Request, res: Response, next: NextFunction) {
-  const bucketName = "book-images";
+const upload = multer({ storage: multer.memoryStorage() });
+const BUCKETNAME = "book-images";
+
+bookImageRouter.post("/upload", upload.single("image"), async function (req: Request, res: Response, next: NextFunction) {
 
   try {
     const file = req.file;
@@ -23,15 +27,15 @@ bookImageRouter.post("/upload", upload.single("image"), async function(req: Requ
 
     console.log('fileName: ' + fileName)
 
-    // ensure bucket exists
-    // const exists = await minioClient.bucketExists(bucketName).catch(() => false);
-    // if (!exists) {
-    //   console.log('Missing bucket');
-    //   await minioClient.makeBucket(bucketName, "us-east-1");
-    // }
+    //ensure bucket exists
+    const exists = await minioClient.bucketExists(BUCKETNAME).catch(() => false);
+    if (!exists) {
+      console.log('Missing bucket');
+      await minioClient.makeBucket(BUCKETNAME, "us-east-1");
+    }
     try {
       await minioClient.putObject(
-        bucketName,
+        BUCKETNAME,
         fileName,
         file.buffer,
         file.size,
@@ -51,8 +55,28 @@ bookImageRouter.post("/upload", upload.single("image"), async function(req: Requ
   }
 });
 
+bookImageRouter.get("/:imgName", async function (req: Request, res: Response, next: NextFunction) {
+  const imgName = req.params.imgName;
+  let size = 0
+  try {
+    const dataStream = await minioClient.getObject(BUCKETNAME, imgName)
+    res.setHeader('Content-Type', 'image/jpeg')
+    dataStream.pipe(res)
+
+    dataStream.on('end', function () {
+      console.log('End. Total size = ' + size)
+    })
+
+  } catch (err) {
+    console.log("Image not found:", err);
+
+    res.status(204).end();
+  }
+});
+
 function getFileExtension(filename: string) {
   return filename.substring(filename.lastIndexOf("."));
 }
+
 
 export default bookImageRouter;
