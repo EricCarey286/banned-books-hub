@@ -1,4 +1,5 @@
 import AddBookForm from '../AddBookForm/AddBookForm';
+import AddImageForm from '../AddImageForm/AddImageForm';
 import AdminBooksList from "../AdminBookList/AdminBookList";
 interface AdminDashboardProps {
     handleLogout: () => void;
@@ -42,6 +43,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ handleLogout, apiUrl, u
 
                 <section className="border p-4 rounded-lg shadow-sm md:col-span-2">
                     <AddBookForm apiUrl={apiUrl} authFetch={authFetch} />
+                    <AddImageForm />
                 </section>
             </div>
         </div>
