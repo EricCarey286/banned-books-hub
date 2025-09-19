@@ -47,6 +47,10 @@ const BookCard = <T extends Book>({ data, renderFields, apiUrl }: BookCardProps<
                 className="mx-auto mb-4 w-30 h-30 object-contain"
                 src={`${URL_PREFIX}://${apiUrl}/book-image/${data.cover_url}`}
                 alt={bookImgAlt}
+                onError={(e) => {
+                    // set default img if no img returned 
+                    (e.currentTarget as HTMLImageElement).src = defaultImg;
+                }}
               />
             ) : (
               <img
