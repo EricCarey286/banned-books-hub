@@ -17,9 +17,12 @@ interface Form {
  * This function retrieves a specified number of contact forms based on the given page number.
  * It calculates the offset and limit using the `getOffset` function and a predefined configuration.
  * The function calls a stored procedure to fetch the data, processes it to determine if there is
- * a next page, and returns the paginated results along with metadata.
+ * a next page, and returns the paginated results along with metadata. Each form's date fields are formatted
+ * to a human-readable string.
  *
  * @param {number} [page=1] - The page number of the contact forms to retrieve. Must be a positive integer.
+ * @returns An object containing an array of paginated contact forms and metadata indicating if there is a next page.
+ * @throws AppError If the input 'page' parameter is not a positive integer.
  */
 export async function getMultiple(page: number = 1) {
   const limit = DB_CONFIG.listPerPage;
@@ -103,9 +106,11 @@ export async function getForm(searchTerm: string) {
 /**
  * Creates a new contact form entry in the database.
  *
- * This function validates the input form data, checks for required fields and their formats,
- * and then inserts the data into the database using a stored procedure.
- * If validation fails or the insertion fails, it throws an AppError with appropriate details.
+ * This function first validates the input form data, checking for required fields and their formats.
+ * If validation fails, it throws an AppError with details about the missing or invalid fields.
+ * It then attempts to insert the data into the database using a stored procedure.
+ * If the insertion is successful, it returns a success message; otherwise, it throws an AppError
+ * indicating the failure of the operation.
  *
  * @param form - An object containing the form data to be created.
  * @returns An object with a message indicating the success or failure of the operation.
