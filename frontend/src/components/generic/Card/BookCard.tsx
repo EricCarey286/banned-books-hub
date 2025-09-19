@@ -29,10 +29,11 @@ type BookCardProps<T extends Book> = {
 /**
  * Renders a book card component that displays book information and can open a modal with detailed data.
  *
- * This component uses the `Card` and `Modal` components to display book details. It includes conditional rendering based on the presence of certain properties in the `data` object. The card is clickable, opening a modal with more detailed information about the book when clicked. The modal can be closed by clicking an 'X' button.
+ * This component utilizes the `Card` and `Modal` components to present book details. It conditionally renders the book cover image based on the presence of `cover_url` in the `data` object. The card is interactive, allowing users to click and open a modal that provides more comprehensive information about the book, including the author, ISBN, and ban reason. The modal can be closed by invoking the `closeModal` function.
  *
  * @param data - The book data to be displayed.
  * @param renderFields - A function that renders additional fields for the card.
+ * @param apiUrl - The API URL used to fetch the book cover image.
  */
 const BookCard = <T extends Book>({ data, renderFields, apiUrl }: BookCardProps<T>) => {
   const bookImgAlt = `${data.title} book cover image`;
