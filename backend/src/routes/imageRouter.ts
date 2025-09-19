@@ -5,9 +5,6 @@ const bookImageRouter = expressRouter.Router();
 import multer from "multer";
 import { minioClient } from "../utils/config";
 
-import * as fs from 'fs'
-import * as path from 'path'
-
 const upload = multer({ storage: multer.memoryStorage() });
 const BUCKETNAME = "book-images";
 
@@ -60,6 +57,7 @@ bookImageRouter.get("/:imgName", async function (req: Request, res: Response, ne
   let size = 0
   try {
     const dataStream = await minioClient.getObject(BUCKETNAME, imgName)
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
     res.setHeader('Content-Type', 'image/jpeg')
     dataStream.pipe(res)
 

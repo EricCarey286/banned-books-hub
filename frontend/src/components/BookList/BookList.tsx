@@ -119,6 +119,7 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
                                 "description",
                                 "ban_reason",
                                 "banned_by",
+                                "cover_url"
                             ];
                             return books.map((item) => (
                                 <BookCard
@@ -131,6 +132,7 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
                                             </p>
                                         ) : null
                                     }
+                                    apiUrl={apiUrl}
                                 />
                             ));
                         })()}

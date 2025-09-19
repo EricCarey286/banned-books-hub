@@ -3,6 +3,8 @@ import Card from "./Card";
 import Modal from "../Button/Modal";
 import defaultImg from "../../../assets/book-thumbnail-default.png"
 
+const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
+
 interface Book {
     id: number;
     isbn: string;
@@ -21,6 +23,7 @@ interface Book {
 type BookCardProps<T extends Book> = {
     data: T;
     renderFields?: (key: keyof T, value: T[keyof T]) => React.ReactNode;
+    apiUrl: string;
 };
 
 /**
@@ -31,71 +34,81 @@ type BookCardProps<T extends Book> = {
  * @param data - The book data to be displayed.
  * @param renderFields - A function that renders additional fields for the card.
  */
-const BookCard = <T extends Book>({ data, renderFields }: BookCardProps<T>) => {
-    const bookImgAlt = `${data.title} book cover image`;
-    const [isModalOpen, setIsModalOpen] = useState(false);
+const BookCard = <T extends Book>({ data, renderFields, apiUrl }: BookCardProps<T>) => {
+  const bookImgAlt = `${data.title} book cover image`;
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-    /**
-     * Handles card click by logging a message and opening a modal.
-     */
-    const handleCardClick = () => {
-        setIsModalOpen(true);
-    };
+  const handleCardClick = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
-    /**
-     * Closes the modal by setting `isModalOpen` to false.
-     */
-    const closeModal = () => {
-        setIsModalOpen(false);
-    };
+  return (
+    <div>
+      <Card
+        data={data}
+        renderFields={renderFields}
+        clickable={true}
+        onClick={handleCardClick}
+        header={
+          <>
+            {data.cover_url ? (
+              <img
+                className="mx-auto mb-4 w-30 h-30 object-contain"
+                src={`${URL_PREFIX}://${apiUrl}/book-image/${data.cover_url}`}
+                alt={bookImgAlt}
+              />
+            ) : (
+              <img
+                className="mx-auto mb-4 w-30 h-30 object-contain"
+                src={defaultImg}
+                alt="Default Cover"
+              />
+            )}
 
-    return (
-        <div>
-            <Card
-                data={data}
-                renderFields={renderFields}
-                clickable={true}
-                onClick={(handleCardClick)}
-                header={
-                    <>
-                        {("cover_url" in data && typeof data.cover_url === "string") ? (
-                            <img className="mx-auto mb-4 w-30 h-30 object-contain" src={data.cover_url} alt={bookImgAlt}></img>
-                        ) : (
-                            <img className="mx-auto mb-4 w-30 h-30 object-contain" src={defaultImg} alt="Default Cover" />
-                        )}
-                        {"title" in data && typeof data.title === "string" && (
-                            <h2 className="text-gray-600 text-lg font-semibold">{data.title}</h2>
-                        )}
-                        {"author" in data && typeof data.author === "string" && (
-                            <p className="text-gray-600 text-sm mb-4">Author: {data.author}</p>
-                        )}
-                        {"ban_reason" in data && (
-                            <p className="text-gray-500 text-xs">
-                                <span className="font-bold">Ban Reason:</span> {String(data.ban_reason)}
-                            </p>
-                        )}
-                    </>
-                }
-            />
+            {"title" in data && typeof data.title === "string" && (
+              <h2 className="text-gray-600 text-lg font-semibold">{data.title}</h2>
+            )}
+            {"author" in data && typeof data.author === "string" && (
+              <p className="text-gray-600 text-sm mb-4">Author: {data.author}</p>
+            )}
+            {"ban_reason" in data && (
+              <p className="text-gray-500 text-xs">
+                <span className="font-bold">Ban Reason:</span> {String(data.ban_reason)}
+              </p>
+            )}
+          </>
+        }
+      />
 
-            <Modal isOpen={isModalOpen} onClose={closeModal} title={data.title}>
-                {("cover_url" in data && typeof data.cover_url === "string") ? (
-                    <img className="mx-auto mb-4 w-30 h-30 object-contain" src={data.cover_url} alt={bookImgAlt}></img>
-                ) : (
-                    <img className="mx-auto mb-4 w-30 h-30 object-contain" src={defaultImg} alt="Default Cover" />
-                )}
-                <p className="text-gray-600 text-sm mb-4">Author: {data.author}</p>
-                <p className="text-gray-600 text-xs mb-4"><span className="font-bold">ISBN: </span>{data.isbn}</p>
-                <p className="text-gray-600 text-sm mb-4">{data.description}</p>
-                <p className="text-gray-500 text-sm">
-                    <span className="font-bold">Ban Reason:</span> {String(data.ban_reason)}
-                </p>
-                <p className="text-gray-500 text-sm">
-                    <span className="font-bold">Banned By:</span> {String(data.banned_by)}
-                </p>
-            </Modal>
-        </div>
-    );
+      <Modal isOpen={isModalOpen} onClose={closeModal} title={data.title}>
+        {data.cover_url ? (
+          <img
+            className="mx-auto mb-4 w-30 h-30 object-contain"
+            src={`${URL_PREFIX}://${apiUrl}/book-image/${data.cover_url}`}
+            alt={bookImgAlt}
+          />
+        ) : (
+          <img
+            className="mx-auto mb-4 w-30 h-30 object-contain"
+            src={defaultImg}
+            alt="Default Cover"
+          />
+        )}
+
+        <p className="text-gray-600 text-sm mb-4">Author: {data.author}</p>
+        <p className="text-gray-600 text-xs mb-4">
+          <span className="font-bold">ISBN: </span>
+          {data.isbn}
+        </p>
+        <p className="text-gray-600 text-sm mb-4">{data.description}</p>
+        <p className="text-gray-500 text-sm">
+          <span className="font-bold">Ban Reason:</span> {String(data.ban_reason)}
+        </p>
+        <p className="text-gray-500 text-sm">
+          <span className="font-bold">Banned By:</span> {String(data.banned_by)}
+        </p>
+      </Modal>
+    </div>
+  );
 };
 
 export default BookCard;
