@@ -46,7 +46,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ handleLogout, apiUrl, u
 
                 <section className="border p-4 rounded-lg shadow-sm md:col-span-2">
                     <AddBookForm apiUrl={apiUrl} authFetch={authFetch} />
-                    <AddImageForm />
+                    <AddImageForm apiUrl={apiUrl}/>
                 </section>
             </div>
         </div>
