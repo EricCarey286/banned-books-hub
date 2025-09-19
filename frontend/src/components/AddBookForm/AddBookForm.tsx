@@ -154,7 +154,8 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
     switch (values.action) {
       case "add":
         if (file && values.isbn) {
-          values.cover_url = `/book-image/${values.isbn}`
+          const ext = file.name.substring(file.name.lastIndexOf(".") + 1).toLowerCase();
+          values.cover_url = `${values.isbn}.${ext}`
           try {
             const { fileName } = await uploadImage(file, values.isbn);
             console.log(fileName);

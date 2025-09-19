@@ -13,6 +13,7 @@ interface Book {
     banned_by: string | null;
     created_at: string;
     updated_at: string;
+    cover_url: string;
     [key: string]: string | number | null; // Index signature for dynamic access
 }
 interface BookListProps {
@@ -96,6 +97,7 @@ const FeaturedBook: React.FC<BookListProps> = ({ apiUrl }) => {
                                     </p>
                                 ) : null
                             }
+                            apiUrl={apiUrl}
                         />
                     ))}
                 </div>

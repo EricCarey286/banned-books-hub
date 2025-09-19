@@ -35,7 +35,7 @@ const Card = <T extends object>({
     onClick
 }: CardProps<T>) => {
     return (
-        <div className={`bg-white shadow-md rounded-lg p-4 flex flex-col h-full border border-gray-200 transform transition duration-300 
+        <div className={`bg-amber-50 shadow-md rounded-lg p-4 flex flex-col h-full border border-gray-200 transform transition duration-300 
             ${clickable ? "hover:scale-105 cursor-pointer" : ""}`}
             onClick={clickable ? onClick : undefined}
             >
@@ -43,9 +43,9 @@ const Card = <T extends object>({
 
             {leftSection || rightSection ? (
                 <div className="flex justify-between pb-4">
-                    {leftSection && <div className="flex-1 pr-4">{leftSection}</div>}
+                    {leftSection && <div className="flex-1/3 pr-4">{leftSection}</div>}
                     {leftSection && rightSection && <div className="border-l border-gray-300"></div>}
-                    {rightSection && <div className="flex-1 pl-4 text-center">{rightSection}</div>}
+                    {rightSection && <div className="flex-2/3 pl-4 flex items-center">{rightSection}</div>}
                 </div>
             ) : (
                 /* Default case: Render all fields in a simple list */
