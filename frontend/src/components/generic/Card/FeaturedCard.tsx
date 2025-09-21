@@ -28,10 +28,10 @@ type FeaturedCardProps<T extends object> = {
 /**
  * Renders a featured card component with conditional rendering of fields based on data properties.
  *
- * This component takes in generic data and renderFields props, then conditionally renders specific fields such as title, author, ISBN, description, ban reason, and banned by. It uses the Card component to structure the layout and passes relevant data to it.
+ * This component takes in generic data and renderFields props, then conditionally renders specific fields such as title, author, ISBN, description, ban reason, and banned by. It utilizes the Card component to structure the layout and handles image loading with a fallback to a default image if the cover URL is not available.
  *
- * @param <T extends object> - A generic type that extends an object, ensuring that data is of a valid object shape.
- * @param {FeaturedCardProps<T>} props - An object containing `data` and `renderFields`.
+ * @param <T extends Book> - A generic type that extends an object, ensuring that data is of a valid object shape.
+ * @param {FeaturedCardProps<T>} props - An object containing `data`, `renderFields`, and `apiUrl`.
  * @returns JSX element representing the featured card with conditionally rendered fields.
  */
 const FeaturedCard = <T extends Book>({ data, renderFields, apiUrl }: FeaturedCardProps<T>) => {
