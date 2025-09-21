@@ -45,7 +45,7 @@ const Card = <T extends object>({
                 <div className="flex justify-between pb-4">
                     {leftSection && <div className="flex-1/3 pr-4">{leftSection}</div>}
                     {leftSection && rightSection && <div className="border-l border-gray-300"></div>}
-                    {rightSection && <div className="flex-2/3 pl-4 flex items-center">{rightSection}</div>}
+                    {rightSection && <div className="flex-2/3 pl-4 flex flex-col justify-center items-center">{rightSection}</div>}
                 </div>
             ) : (
                 /* Default case: Render all fields in a simple list */

@@ -67,9 +67,9 @@ const FeaturedCard = <T extends Book>({ data, renderFields, apiUrl }: FeaturedCa
             }
             rightSection={
                 <>
-                    {"description" in data && typeof data.description === "string" && <p className="text-gray-600 text-sm">{data.description}</p>}
-                    {"ban_reason" in data && <p className="text-gray-500 text-xs"><span className="font-bold">Ban Reason:</span> {String(data.ban_reason)}</p>}
-                    {"banned_by" in data && <p className="text-gray-500 text-xs"><span className="font-bold">Banned By:</span> {String(data.banned_by)}</p>}
+                    {"description" in data && typeof data.description === "string" && <p className="text-gray-600 text-sm flex flex-col justify-center mb-4">{data.description}</p>}
+                    {"ban_reason" in data && <p className="text-gray-500 text-xs flex flex-col justify-center mb-4"><span className="font-bold">Ban Reason:</span> {String(data.ban_reason)}</p>}
+                    {"banned_by" in data && <p className="text-gray-500 text-xs flex flex-col justify-center mb-4"><span className="font-bold">Banned By:</span> {String(data.banned_by)}</p>}
                 </>
             }
         />
