@@ -14,8 +14,9 @@ type CardProps<T extends object> = {
  * A flexible card component that can render various data fields with customizable sections and styles.
  *
  * This component accepts a generic type T representing the shape of the data object. It supports optional header, left section,
- * right section, and clickable behavior. The `renderFields` function allows for custom rendering of each field, while
- * excluding certain default keys like 'id', 'created_on', and 'updated_on' from being rendered by default.
+ * right section, and clickable behavior. The component conditionally renders sections based on the provided props and utilizes
+ * the `renderFields` function for custom field rendering, while excluding certain default keys like 'id', 'created_on', and
+ * 'updated_on' from being rendered by default.
  *
  * @param data - An object containing the data to be displayed in the card.
  * @param renderFields - A function that takes a key and value from the data object and returns JSX for rendering.
