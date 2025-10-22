@@ -32,7 +32,7 @@ router.get('/search', async function(req: Request, res: Response, next: NextFunc
   }
 });
 
-//get specific book based on a search term
+//get featured book
 router.get('/featured', async function(req: Request, res: Response, next: NextFunction) {
   try {
     res.json(await books.getFeaturedBook());
