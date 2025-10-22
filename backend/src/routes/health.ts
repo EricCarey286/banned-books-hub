@@ -1,5 +1,5 @@
 // server/routes/health.ts
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, RequestHandler } from 'express';
 import { getCacheClient, getCacheStats, cacheExists } from '../cache.ts';
 
 const router = Router();
@@ -26,7 +26,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
  * Detailed cache health check
  * GET /health/cache
  */
-router.get('/cache', async (req: Request, res: Response): Promise<void> => {
+const cacheHealthHandler: RequestHandler = async (req: Request, res: Response) => {
   try {
     const cacheClient = getCacheClient();
     
@@ -76,13 +76,15 @@ router.get('/cache', async (req: Request, res: Response): Promise<void> => {
       timestamp: new Date().toISOString(),
     });
   }
-});
+};
+
+router.get('/cache', cacheHealthHandler);
 
 /**
  * Cache statistics
  * GET /health/cache/stats
  */
-router.get('/cache/stats', async (req: Request, res: Response): Promise<void> => {
+ const cacheStateHandler: RequestHandler = async (req: Request, res: Response) => {
   try {
     const stats = await getCacheStats();
     
@@ -101,6 +103,8 @@ router.get('/cache/stats', async (req: Request, res: Response): Promise<void> =>
       connected: false,
     });
   }
-});
+};
+
+router.get('/cache/stats', cacheStateHandler);
 
 export default router;
