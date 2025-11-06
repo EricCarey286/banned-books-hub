@@ -199,11 +199,5 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-process.on('SIGINT', async () => {
-  console.log('⚠️  SIGINT received, shutting down gracefully...');
-  await closeCache();
-  process.exit(0);
-});
-
 // Start the server
 startServer();
