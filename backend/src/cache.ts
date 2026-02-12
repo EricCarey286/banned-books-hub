@@ -5,6 +5,13 @@ type RedisClient = RedisClientType<any, any, any>;
 
 let redisClient: RedisClient | null = null;
 
+type CacheEnvelope<T> = {
+  v: T;
+  ts: number;
+};
+
+const swrRefreshes = new Map<string, Promise<void>>();
+
 interface CacheOptions {
   url?: string;
   maxReconnectAttempts?: number;
@@ -122,6 +129,81 @@ export async function setCache<T = any>(
   }
 }
 
+async function getCacheEnvelope<T>(key: string): Promise<CacheEnvelope<T> | null> {
+  if (!isClientReady()) return null;
+
+  try {
+    const data = await redisClient!.get(key);
+    if (!data) return null;
+    return JSON.parse(data) as CacheEnvelope<T>;
+  } catch (error) {
+    console.error(`Cache get error for key "${key}":`, error instanceof Error ? error.message : error);
+    return null;
+  }
+}
+
+async function setCacheEnvelope<T>(key: string, value: T, ttl: number): Promise<boolean> {
+  if (!isClientReady()) return false;
+  if (ttl <= 0) return false;
+
+  try {
+    const envelope: CacheEnvelope<T> = { v: value, ts: Date.now() };
+    await redisClient!.setEx(key, ttl, JSON.stringify(envelope));
+    return true;
+  } catch (error) {
+    console.error(`Cache set error for key "${key}":`, error instanceof Error ? error.message : error);
+    return false;
+  }
+}
+
+export type CacheSWRStatus = 'hit' | 'stale' | 'miss' | 'bypass';
+
+export async function getOrSetCacheSWR<T>(options: {
+  key: string;
+  ttlSeconds: number;
+  staleTtlSeconds: number;
+  fetcher: () => Promise<T>;
+}): Promise<{ data: T; status: CacheSWRStatus }> {
+  const { key, ttlSeconds, staleTtlSeconds, fetcher } = options;
+
+  if (!isClientReady()) {
+    return { data: await fetcher(), status: 'bypass' };
+  }
+
+  const fresh = await getCacheEnvelope<T>(key);
+  if (fresh) {
+    return { data: fresh.v, status: 'hit' };
+  }
+
+  const staleKey = `${key}:stale`;
+  const stale = await getCacheEnvelope<T>(staleKey);
+
+  if (stale) {
+    if (!swrRefreshes.has(key)) {
+      const refreshPromise = (async () => {
+        try {
+          const newValue = await fetcher();
+          await setCacheEnvelope(key, newValue, ttlSeconds);
+          await setCacheEnvelope(staleKey, newValue, staleTtlSeconds);
+        } catch (error) {
+          console.error(`Cache SWR refresh error for key "${key}":`, error instanceof Error ? error.message : error);
+        } finally {
+          swrRefreshes.delete(key);
+        }
+      })();
+
+      swrRefreshes.set(key, refreshPromise);
+    }
+
+    return { data: stale.v, status: 'stale' };
+  }
+
+  const data = await fetcher();
+  await setCacheEnvelope(key, data, ttlSeconds);
+  await setCacheEnvelope(staleKey, data, staleTtlSeconds);
+  return { data, status: 'miss' };
+}
+
 /**
  * Delete cached data by key
  * @param key - Cache key to delete
@@ -154,11 +236,28 @@ export async function deleteCachePattern(pattern: string): Promise<boolean> {
   }
 
   try {
-    const keys = await redisClient!.keys(pattern);
-    if (keys.length > 0) {
-      await redisClient!.del(keys);
-      console.log(`🗑️  Deleted ${keys.length} cache keys matching pattern "${pattern}"`);
+    let deletedCount = 0;
+    const batch: string[] = [];
+
+    for await (const key of redisClient!.scanIterator({ MATCH: pattern, COUNT: 500 }) as AsyncIterable<string>) {
+      batch.push(key.toString());
+
+      if (batch.length >= 500) {
+        const results = await Promise.all(batch.map(k => redisClient!.del(k)));
+        deletedCount += results.reduce((sum, n) => sum + n, 0);
+        batch.length = 0;
+      }
     }
+
+    if (batch.length > 0) {
+      const results = await Promise.all(batch.map(k => redisClient!.del(k)));
+      deletedCount += results.reduce((sum, n) => sum + n, 0);
+    }
+
+    if (deletedCount > 0) {
+      console.log(`🗑️  Deleted ${deletedCount} cache keys matching pattern "${pattern}"`);
+    }
+
     return true;
   } catch (error) {
     console.error(`Cache pattern delete error for pattern "${pattern}":`, error instanceof Error ? error.message : error);

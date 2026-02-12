@@ -1,8 +1,9 @@
 // routes/bookRouter.ts
 import express, { Request, Response, NextFunction } from 'express';
+import crypto from 'crypto';
 import * as books from '../services/books';
 import { AppError } from '../utils/helper';
-import { getCache, setCache, deleteCachePattern, deleteCache } from '../cache.ts';
+import { getOrSetCacheSWR, deleteCachePattern, deleteCache } from '../cache.ts';
 import { getCachedImageUrl, getCachedImageUrls } from '../minioCache.ts';
 
 const router = express.Router();
@@ -12,6 +13,33 @@ const BOOK_LIST_TTL = 5 * 60; // 5 minutes
 const BOOK_DETAIL_TTL = 60 * 60; // 1 hour
 const FEATURED_BOOK_TTL = 15 * 60; // 15 minutes
 const SEARCH_TTL = 10 * 60; // 10 minutes
+
+function setHttpCacheHeaders(options: {
+  req: Request;
+  res: Response;
+  etagSource: unknown;
+  ttlSeconds: number;
+  staleTtlSeconds: number;
+  cacheStatus: 'hit' | 'stale' | 'miss' | 'bypass';
+}): boolean {
+  const { req, res, etagSource, ttlSeconds, staleTtlSeconds, cacheStatus } = options;
+
+  const body = JSON.stringify(etagSource);
+  const etag = `W/"${crypto.createHash('sha256').update(body).digest('base64')}"`;
+
+  const staleWhileRevalidate = Math.max(staleTtlSeconds - ttlSeconds, 0);
+  res.setHeader('Cache-Control', `public, max-age=${ttlSeconds}, stale-while-revalidate=${staleWhileRevalidate}`);
+  res.setHeader('ETag', etag);
+  res.setHeader('X-Cache', cacheStatus);
+
+  const ifNoneMatch = req.headers['if-none-match'];
+  if (typeof ifNoneMatch === 'string' && ifNoneMatch === etag) {
+    res.status(304).end();
+    return true;
+  }
+
+  return false;
+}
 
 /**
  * Helper function to add image URLs to books
@@ -58,33 +86,36 @@ router.get('/', async function(req: Request, res: Response, next: NextFunction):
     const page = Number(req.query.page) || 1;
     const cacheKey = `books:list:page:${page}`;
 
-    // Try cache first
-    const cachedData = await getCache(cacheKey);
-    if (cachedData) {
-      console.log(`📦 Cache HIT: books list page ${page}`);
-      res.json({
-        ...cachedData,
-        cached: true,
-        source: 'redis'
-      });
+    const { data: payload, status } = await getOrSetCacheSWR({
+      key: cacheKey,
+      ttlSeconds: BOOK_LIST_TTL,
+      staleTtlSeconds: BOOK_LIST_TTL * 6,
+      fetcher: async () => {
+        let result = await books.getMultiple(page);
+        result = await addImageUrlsToBooks(result);
+        return result;
+      },
+    });
+
+    if (setHttpCacheHeaders({
+      req,
+      res,
+      etagSource: payload,
+      ttlSeconds: BOOK_LIST_TTL,
+      staleTtlSeconds: BOOK_LIST_TTL * 6,
+      cacheStatus: status,
+    })) {
       return;
     }
 
-    console.log(`💾 Cache MISS: books list page ${page}`);
-
-    // Get from database
-    let result = await books.getMultiple(page);
-
-    // Add MinIO image URLs
-    result = await addImageUrlsToBooks(result);
-
-    // Cache the result
-    await setCache(cacheKey, result, BOOK_LIST_TTL);
+    const cached = status === 'hit' || status === 'stale';
+    const source = status === 'miss' || status === 'bypass' ? 'database' : 'redis';
+    console.log(`📦 Books list page ${page} status: ${status}`);
 
     res.json({
-      ...result,
-      cached: false,
-      source: 'database'
+      ...payload,
+      cached,
+      source,
     });
   } catch (err: any) {
     console.error(`Error while getting books`, err.message);
@@ -107,33 +138,36 @@ router.get('/search', async function(req: Request, res: Response, next: NextFunc
     const normalizedTerm = searchTerm.toLowerCase().trim();
     const cacheKey = `books:search:${normalizedTerm}`;
 
-    // Try cache first
-    const cachedData = await getCache(cacheKey);
-    if (cachedData) {
-      console.log(`📦 Cache HIT: search for "${searchTerm}"`);
-      res.json({
-        ...cachedData,
-        cached: true,
-        source: 'redis'
-      });
+    const { data: payload, status } = await getOrSetCacheSWR({
+      key: cacheKey,
+      ttlSeconds: SEARCH_TTL,
+      staleTtlSeconds: SEARCH_TTL * 6,
+      fetcher: async () => {
+        let result = await books.getBook(searchTerm);
+        result = await addImageUrlsToBooks(result);
+        return result;
+      },
+    });
+
+    if (setHttpCacheHeaders({
+      req,
+      res,
+      etagSource: payload,
+      ttlSeconds: SEARCH_TTL,
+      staleTtlSeconds: SEARCH_TTL * 6,
+      cacheStatus: status,
+    })) {
       return;
     }
 
-    console.log(`💾 Cache MISS: search for "${searchTerm}"`);
-
-    // Get from database
-    let result = await books.getBook(searchTerm);
-
-    // Add MinIO image URLs
-    result = await addImageUrlsToBooks(result);
-
-    // Cache the result
-    await setCache(cacheKey, result, SEARCH_TTL);
+    const cached = status === 'hit' || status === 'stale';
+    const source = status === 'miss' || status === 'bypass' ? 'database' : 'redis';
+    console.log(`📦 Search "${searchTerm}" status: ${status}`);
 
     res.json({
-      ...result,
-      cached: false,
-      source: 'database'
+      ...payload,
+      cached,
+      source,
     });
   } catch (err: any) {
     console.error(`Error while searching for book(s) containing: ${req.query.term}`, err.message);
@@ -148,33 +182,36 @@ router.get('/featured', async function(req: Request, res: Response, next: NextFu
   try {
     const cacheKey = 'books:featured';
 
-    // Try cache first
-    const cachedData = await getCache(cacheKey);
-    if (cachedData) {
-      console.log('📦 Cache HIT: featured book');
-      res.json({
-        ...cachedData,
-        cached: true,
-        source: 'redis'
-      });
+    const { data: payload, status } = await getOrSetCacheSWR({
+      key: cacheKey,
+      ttlSeconds: FEATURED_BOOK_TTL,
+      staleTtlSeconds: FEATURED_BOOK_TTL * 6,
+      fetcher: async () => {
+        let result = await books.getFeaturedBook();
+        result = await addImageUrlsToBooks(result);
+        return result;
+      },
+    });
+
+    if (setHttpCacheHeaders({
+      req,
+      res,
+      etagSource: payload,
+      ttlSeconds: FEATURED_BOOK_TTL,
+      staleTtlSeconds: FEATURED_BOOK_TTL * 6,
+      cacheStatus: status,
+    })) {
       return;
     }
 
-    console.log('💾 Cache MISS: featured book');
-
-    // Get from database
-    let result = await books.getFeaturedBook();
-
-    // Add MinIO image URLs
-    result = await addImageUrlsToBooks(result);
-
-    // Cache the result
-    await setCache(cacheKey, result, FEATURED_BOOK_TTL);
+    const cached = status === 'hit' || status === 'stale';
+    const source = status === 'miss' || status === 'bypass' ? 'database' : 'redis';
+    console.log(`📦 Featured book status: ${status}`);
 
     res.json({
-      ...result,
-      cached: false,
-      source: 'database'
+      ...payload,
+      cached,
+      source,
     });
   } catch (err: any) {
     console.error('Error while grabbing featured book', err.message);
