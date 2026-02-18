@@ -15,7 +15,7 @@ export const DB_CONFIG = {
 };
 
 export const minioClient = new Client({
-  endPoint: "bucket-production-70f9.up.railway.app",
+  endPoint: process.env.MINIO_URL || "bucket-development-d7ab.up.railway.app",
   useSSL: true,
   accessKey: process.env.MINIO_ACCESS_KEY!,
   secretKey: process.env.MINIO_SECRET_KEY!,
