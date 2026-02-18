@@ -1,6 +1,7 @@
 import cors from "cors";
 import express from "express";
 import jwt from "jsonwebtoken";
+import compression from "compression";
 const http = require("http");
 const app = express();
 import helmet from "helmet";
@@ -9,6 +10,8 @@ import booksRouter from "./routes/bookRouter";
 import suggestedbookRouter from "./routes/suggestedBookRouter";
 import contactFormRouter from "./routes/contactFormRouter";
 import bookImageRouter from "./routes/imageRouter";
+import { initializeCache, closeCache } from './cache.ts';
+import healthRouter from './routes/health.ts';
 
 import { PORT } from './utils/config';
 import { AppError } from "./utils/helper";
@@ -26,6 +29,12 @@ app.use(
     extended: true,
   })
 );
+app.use(compression());
+
+app.use(express.static('dist', {
+  maxAge: '1y',
+  immutable: true
+}));
 
 interface AuthRequest extends Request {
   user?: {
@@ -127,7 +136,15 @@ app.get("/api/admin/validate", authenticate, (req: AuthRequest, res: Response) =
 });
 
 app.get("/", (req: Request, res: Response) => {
-  res.json({ message: "success" });
+  res.json({ 
+    message: 'Banned Books Hub API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      cacheHealth: '/health/cache',
+      cacheStats: '/health/cache/stats',
+    }
+   });
 });
 
 //Route to each table
@@ -135,6 +152,7 @@ app.use("/books", booksRouter);
 app.use("/suggested_books", suggestedbookRouter);
 app.use("/contact_form", contactFormRouter);
 app.use("/book-image", bookImageRouter);
+app.use('/health', healthRouter);
 
 //Error handler middleware
 app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
@@ -151,6 +169,35 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Start HTTPS server
-http.createServer(app).listen(PORT, '0.0.0.0', () => {
-  console.log(`Secure server is running at ${BACKEND_URL}:${PORT}`);
+// http.createServer(app).listen(PORT, '0.0.0.0', () => {
+//   console.log(`Secure server is running at ${BACKEND_URL}:${PORT}`);
+// });
+async function startServer() {
+  try {
+    console.log('🚀 Starting server...');
+    
+    // Initialize Redis cache
+    await initializeCache();
+    
+    // Start Express server
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+      console.log(`📍 Health check: http://localhost:${PORT}/health`);
+      console.log(`📍 Cache health: http://localhost:${PORT}/health/cache`);
+      console.log(`📍 Cache stats: http://localhost:${PORT}/health/cache/stats`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('⚠️  SIGTERM received, shutting down gracefully...');
+  await closeCache();
+  process.exit(0);
 });
+
+// Start the server
+startServer();

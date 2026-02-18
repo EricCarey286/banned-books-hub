@@ -4,3 +4,4 @@ node_modules/
 certs/
 certs/server.cert
 certs/server.key
+.vscode/
