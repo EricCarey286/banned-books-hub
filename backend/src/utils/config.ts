@@ -13,9 +13,20 @@ export const DB_CONFIG = {
     listPerPage: 15,
 };
 
+function parseMinioUrl(raw: string) {
+  const withProto = raw.includes('://') ? raw : `https://${raw}`;
+  const parsed = new URL(withProto);
+  const useSSL = parsed.protocol === 'https:';
+  const defaultPort = useSSL ? 443 : 80;
+  return {
+    endPoint: parsed.hostname,
+    port: parsed.port ? parseInt(parsed.port, 10) : defaultPort,
+    useSSL,
+  };
+}
+
 export const minioClient = new Client({
-  endPoint: process.env.MINIO_URL!,
-  useSSL: true,
+  ...parseMinioUrl(process.env.MINIO_URL!),
   accessKey: process.env.MINIO_ACCESS_KEY!,
   secretKey: process.env.MINIO_SECRET_KEY!,
 });
