@@ -2,7 +2,6 @@ import cors from "cors";
 import express from "express";
 import jwt from "jsonwebtoken";
 import compression from "compression";
-const http = require("http");
 const app = express();
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
@@ -15,11 +14,11 @@ import healthRouter from './routes/health.ts';
 
 import { PORT } from './utils/config';
 import { AppError } from "./utils/helper";
+import { authenticate, AuthRequest } from './middleware/auth';
 
 import { Request, Response, NextFunction } from 'express';
 
 const FRONTEND_URL = `${process.env.URL_PREFIX}://${process.env.FRONTEND_URL}`;
-const BACKEND_URL = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
 const JWT_SECRET = process.env.JWT_SECRET || 'missing-key';
 const JWT_EXPIRES_IN = '24h';
 
@@ -36,44 +35,6 @@ app.use(express.static('dist', {
   immutable: true
 }));
 
-interface AuthRequest extends Request {
-  user?: {
-    username: string;
-    role: string;
-  };
-}
-
-// Authentication Middleware using JWT
-/**
- * Authenticates a user request by verifying the JWT token.
- *
- * This function extracts the JWT token from the Authorization header,
- * verifies its authenticity using the secret key, and attaches the decoded
- * payload to the request object if verification is successful. If the token
- * is missing, invalid, or expired, it responds with an appropriate error status
- * and message.
- */
-const authenticate = (req: AuthRequest, res: Response, next: NextFunction): void => {
-  try {
-    // Get token from Authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      res.status(401).json({ message: "Authorization token required" });
-      return;
-    }
-
-    const token = authHeader.split(' ')[1];
-    
-    // Verify token
-    const decoded = jwt.verify(token, JWT_SECRET) as { username: string, role: string };
-    req.user = decoded;
-    
-    next();
-  } catch (error) {
-    res.status(401).json({ message: "Invalid or expired token" });
-    return;
-  }
-};
 
 //express-rate-limit for overload prevention
 app.set('trust proxy', 1); // or true

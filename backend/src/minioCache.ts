@@ -1,5 +1,5 @@
 // server/minioCache.ts
-import { Client, ClientOptions } from 'minio';
+import { Client, ClientOptions, CopyConditions } from 'minio';
 import { getCache, setCache, deleteCache } from './cache.ts';
 
 // MinIO client configuration
@@ -216,9 +216,10 @@ export async function copyObject(sourcePath: string, destPath: string): Promise<
     const sourceObject = `${BUCKET_NAME}/${sourcePath}`;
     
     await minioClient.copyObject(
-      BUCKET_NAME,      // destination bucket
-      destPath,         // destination object name
-      sourceObject      // source object (bucket/path format)
+      BUCKET_NAME,
+      destPath,
+      sourceObject,
+      new CopyConditions()
     );
     
     console.log(`📋 Copied ${sourcePath} to ${destPath}`);

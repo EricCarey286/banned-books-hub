@@ -1,6 +1,5 @@
 import mysql from "mysql2/promise";
 import { DB_CONFIG } from "../utils/config";
-require("dotenv").config();
 
 const pool = mysql.createPool(DB_CONFIG.db);
 

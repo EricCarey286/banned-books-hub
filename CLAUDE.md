@@ -71,4 +71,5 @@ The app is deployed on Railway. The backend is an HTTP server (despite the comme
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
+at `specs/001-security-hardening/plan.md`.
 <!-- SPECKIT END -->

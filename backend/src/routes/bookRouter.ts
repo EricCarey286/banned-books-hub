@@ -3,6 +3,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import * as books from '../services/books';
 import { AppError } from '../utils/helper';
+import { authenticate } from '../middleware/auth';
 import { getOrSetCacheSWR, deleteCachePattern, deleteCache } from '../cache.ts';
 import { getCachedImageUrl, getCachedImageUrls } from '../minioCache.ts';
 
@@ -222,7 +223,7 @@ router.get('/featured', async function(req: Request, res: Response, next: NextFu
 /**
  * POST /books - Create book(s) (INVALIDATES CACHE)
  */
-router.post('/', async function(req: Request, res: Response, next: NextFunction): Promise<void> {
+router.post('/', authenticate, async function(req: Request, res: Response, next: NextFunction): Promise<void> {
   const booksArray = req.body;
   const results: any[] = [];
 
@@ -256,7 +257,7 @@ router.post('/', async function(req: Request, res: Response, next: NextFunction)
 /**
  * PUT /books/:id - Update book (INVALIDATES CACHE)
  */
-router.put('/:id', async function(req: Request, res: Response, next: NextFunction): Promise<void> {
+router.put('/:id', authenticate, async function(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const id = Number(req.params.id);
     if (isNaN(id) || id <= 0) {
@@ -284,7 +285,7 @@ router.put('/:id', async function(req: Request, res: Response, next: NextFunctio
 /**
  * DELETE /books/:id - Delete single book (INVALIDATES CACHE)
  */
-router.delete('/:id', async function(req: Request, res: Response, next: NextFunction): Promise<void> {
+router.delete('/:id', authenticate, async function(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const id = Number(req.params.id);
     if (isNaN(id) || id <= 0) {
@@ -312,7 +313,7 @@ router.delete('/:id', async function(req: Request, res: Response, next: NextFunc
 /**
  * DELETE /books - Delete multiple books (INVALIDATES CACHE)
  */
-router.delete('/', async function(req: Request, res: Response, next: NextFunction): Promise<void> {
+router.delete('/', authenticate, async function(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { ids } = req.body;
 

@@ -31,8 +31,7 @@ function AppContent() {
   const [error, setError] = useState("");
   const [username, setUsername] = useState<string>("");
   const navigate = useNavigate();
-  const location = useLocation();
-  
+
   // Helper function to get the auth token
   /**
    * Retrieves the authentication token from local storage.
@@ -42,7 +41,7 @@ function AppContent() {
   // Helper function to get authorization headers
   const getAuthHeaders = useCallback(() => {
     const token = localStorage.getItem("authToken");
-    return token ? { Authorization: `Bearer ${token}` } : {Authorization: `Bearer Empty`};
+    return token ? { Authorization: `Bearer ${token}` } : {};
   }, []);
   
   useEffect(() => {
@@ -92,7 +91,7 @@ function AppContent() {
     };
   
     checkAuth();
-  }, [location.pathname, getAuthHeaders]); // Re-check auth when path changes
+  }, [getAuthHeaders]);
 
   /**
    * Handles the login process for admin users.
