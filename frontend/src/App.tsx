@@ -41,7 +41,7 @@ function AppContent() {
   // Helper function to get authorization headers
   const getAuthHeaders = useCallback(() => {
     const token = localStorage.getItem("authToken");
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    return token ? { Authorization: `Bearer ${token}` } : undefined;
   }, []);
   
   useEffect(() => {
@@ -150,7 +150,7 @@ function AppContent() {
     const authHeaders = getAuthHeaders();
     const headers = {
       ...options.headers,
-      ...(authHeaders.Authorization ? authHeaders : {}), // Only add if Authorization exists
+      ...(authHeaders ?? {}),
     };
   
     return fetch(url, { ...options, headers });
