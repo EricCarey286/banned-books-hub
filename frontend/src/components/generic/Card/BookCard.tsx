@@ -1,46 +1,24 @@
 import React, { useState } from "react";
 import Card from "./Card";
 import Modal from "../Button/Modal";
-import defaultImg from "../../../assets/book-thumbnail-default.png"
+import defaultImg from "../../../assets/book-thumbnail-default.png";
+import { Book } from "../../../types/book";
+import { buildUrl } from "../../../utils/api";
 
-const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
-
-interface Book {
-    id: number;
-    isbn: string;
-    title: string;
-    author: string;
-    description: string;
-    ban_reason: string | null;
-    banned_by: string | null;
-    created_at: string;
-    updated_at: string;
-    cover_url: string
-    [key: string]: string | number | null; // Index signature for dynamic access
-}
-
-// Define the type for the BookCard component's props
 type BookCardProps<T extends Book> = {
     data: T;
     renderFields?: (key: keyof T, value: T[keyof T]) => React.ReactNode;
     apiUrl: string;
 };
 
-/**
- * Renders a book card component that displays book information and can open a modal with detailed data.
- *
- * This component utilizes the `Card` and `Modal` components to present book details. It conditionally renders the book cover image based on the presence of `cover_url` in the `data` object. The card is interactive, allowing users to click and open a modal that provides more comprehensive information about the book, including the author, ISBN, and ban reason. The modal can be closed by invoking the `closeModal` function.
- *
- * @param data - The book data to be displayed.
- * @param renderFields - A function that renders additional fields for the card.
- * @param apiUrl - The API URL used to fetch the book cover image.
- */
 const BookCard = <T extends Book>({ data, renderFields, apiUrl }: BookCardProps<T>) => {
   const bookImgAlt = `${data.title} book cover image`;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleCardClick = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
+  const coverSrc = buildUrl(apiUrl, `/book-image/${data.cover_url}`);
 
   return (
     <div>
@@ -53,11 +31,11 @@ const BookCard = <T extends Book>({ data, renderFields, apiUrl }: BookCardProps<
           <>
             {data.cover_url ? (
               <img
+                loading="lazy"
                 className="mx-auto mb-4 w-30 h-30 object-contain"
-                src={`${URL_PREFIX}://${apiUrl}/book-image/${data.cover_url}`}
+                src={coverSrc}
                 alt={bookImgAlt}
                 onError={(e) => {
-                    // set default img if no img returned 
                     (e.currentTarget as HTMLImageElement).src = defaultImg;
                 }}
               />
@@ -88,7 +66,7 @@ const BookCard = <T extends Book>({ data, renderFields, apiUrl }: BookCardProps<
         {data.cover_url ? (
           <img
             className="mx-auto mb-4 w-30 h-30 object-contain"
-            src={`${URL_PREFIX}://${apiUrl}/book-image/${data.cover_url}`}
+            src={coverSrc}
             alt={bookImgAlt}
           />
         ) : (

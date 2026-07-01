@@ -1,6 +1,11 @@
 node_modules/
+dist/
+build/
+*.log
 .env
+.env.*
 .DS_Store
 certs/
 certs/server.cert
 certs/server.key
+.vscode/

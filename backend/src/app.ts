@@ -1,7 +1,7 @@
 import cors from "cors";
 import express from "express";
 import jwt from "jsonwebtoken";
-const http = require("http");
+import compression from "compression";
 const app = express();
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
@@ -9,14 +9,16 @@ import booksRouter from "./routes/bookRouter";
 import suggestedbookRouter from "./routes/suggestedBookRouter";
 import contactFormRouter from "./routes/contactFormRouter";
 import bookImageRouter from "./routes/imageRouter";
+import { initializeCache, closeCache } from './cache';
+import healthRouter from './routes/health';
 
 import { PORT } from './utils/config';
 import { AppError } from "./utils/helper";
+import { authenticate, AuthRequest } from './middleware/auth';
 
 import { Request, Response, NextFunction } from 'express';
 
 const FRONTEND_URL = `${process.env.URL_PREFIX}://${process.env.FRONTEND_URL}`;
-const BACKEND_URL = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
 const JWT_SECRET = process.env.JWT_SECRET || 'missing-key';
 const JWT_EXPIRES_IN = '24h';
 
@@ -26,45 +28,13 @@ app.use(
     extended: true,
   })
 );
+app.use(compression());
 
-interface AuthRequest extends Request {
-  user?: {
-    username: string;
-    role: string;
-  };
-}
+app.use(express.static('dist', {
+  maxAge: '1y',
+  immutable: true
+}));
 
-// Authentication Middleware using JWT
-/**
- * Authenticates a user request by verifying the JWT token.
- *
- * This function extracts the JWT token from the Authorization header,
- * verifies its authenticity using the secret key, and attaches the decoded
- * payload to the request object if verification is successful. If the token
- * is missing, invalid, or expired, it responds with an appropriate error status
- * and message.
- */
-const authenticate = (req: AuthRequest, res: Response, next: NextFunction): void => {
-  try {
-    // Get token from Authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      res.status(401).json({ message: "Authorization token required" });
-      return;
-    }
-
-    const token = authHeader.split(' ')[1];
-    
-    // Verify token
-    const decoded = jwt.verify(token, JWT_SECRET) as { username: string, role: string };
-    req.user = decoded;
-    
-    next();
-  } catch (error) {
-    res.status(401).json({ message: "Invalid or expired token" });
-    return;
-  }
-};
 
 //express-rate-limit for overload prevention
 app.set('trust proxy', 1); // or true
@@ -127,7 +97,15 @@ app.get("/api/admin/validate", authenticate, (req: AuthRequest, res: Response) =
 });
 
 app.get("/", (req: Request, res: Response) => {
-  res.json({ message: "success" });
+  res.json({ 
+    message: 'Banned Books Hub API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      cacheHealth: '/health/cache',
+      cacheStats: '/health/cache/stats',
+    }
+   });
 });
 
 //Route to each table
@@ -135,6 +113,7 @@ app.use("/books", booksRouter);
 app.use("/suggested_books", suggestedbookRouter);
 app.use("/contact_form", contactFormRouter);
 app.use("/book-image", bookImageRouter);
+app.use('/health', healthRouter);
 
 //Error handler middleware
 app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
@@ -151,6 +130,35 @@ app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Start HTTPS server
-http.createServer(app).listen(PORT, '0.0.0.0', () => {
-  console.log(`Secure server is running at ${BACKEND_URL}:${PORT}`);
+// http.createServer(app).listen(PORT, '0.0.0.0', () => {
+//   console.log(`Secure server is running at ${BACKEND_URL}:${PORT}`);
+// });
+async function startServer() {
+  try {
+    console.log('🚀 Starting server...');
+    
+    // Initialize Redis cache
+    await initializeCache();
+    
+    // Start Express server
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+      console.log(`📍 Health check: http://localhost:${PORT}/health`);
+      console.log(`📍 Cache health: http://localhost:${PORT}/health/cache`);
+      console.log(`📍 Cache stats: http://localhost:${PORT}/health/cache/stats`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('⚠️  SIGTERM received, shutting down gracefully...');
+  await closeCache();
+  process.exit(0);
 });
+
+// Start the server
+startServer();

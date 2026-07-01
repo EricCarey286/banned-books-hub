@@ -1,34 +1,13 @@
 import { useEffect, useState } from "react";
 import PageButton from "../generic/Button/PageButton";
 import BookCard from "../generic/Card/BookCard";
+import { Book } from "../../types/book";
+import { buildUrl } from "../../utils/api";
 
-const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
-interface Book {
-    id: number;
-    isbn: string;
-    title: string;
-    author: string;
-    description: string;
-    ban_reason: string | null;
-    banned_by: string | null;
-    created_at: string;
-    updated_at: string;
-    cover_url: string;
-    [key: string]: string | number | null; // Index signature for dynamic access
-}
 interface BookListProps {
     apiUrl: string;
 }
 
-/**
- * React component that fetches and displays a list of books from an API.
- *
- * It manages the state of books, loading status, pagination, and error handling.
- * The component fetches books data using a provided API URL and page number,
- * updates the UI based on the fetched data, and handles navigation between pages.
- *
- * @param apiUrl - The base URL for the API endpoint to fetch books.
- */
 const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
 
     const [books, setBooks] = useState<Book[]>([]);
@@ -37,22 +16,12 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
     const [loading, setLoading] = useState<boolean>(true);
     const [hasNextPage, setHasNextPage] = useState(true);
 
-
-    // Fetch data from the backend
     useEffect(() => {
-        /**
-         * Fetches books from an API and updates state with fetched data.
-         *
-         * This function makes an asynchronous request to fetch books based on the provided page number.
-         * It handles successful responses by updating the `books` and `hasNextPage` states.
-         * In case of an error, it logs the error message and sets a generic error message in the state.
-         * Finally, it ensures that the loading state is set to false.
-         */
         const fetchBooks = async () => {
+            setLoading(true);
             try {
-                const response = await fetch(`${URL_PREFIX}://${apiUrl}/books?page=${pageNumber}`);
+                const response = await fetch(buildUrl(apiUrl, `/books?page=${pageNumber}`));
                 if (!response.ok) {
-                    console.log('Fetch Books Error');
                     throw new Error(`Error: ${response.status} ${response.statusText}`);
                 }
                 const data = await response.json();
@@ -60,11 +29,9 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
                 setHasNextPage(data.meta.hasNextPage);
             } catch (err: unknown) {
                 if (err instanceof Error) {
-                    console.log(`Error on /books fetch: ${err.message}`);
-                    setMyError('We are having trouble loading the latest books, please try again later!');
-                } else {
-                    setMyError("We are having trouble loading the latest books, please try again later!");
+                    console.error(`Error on /books fetch: ${err.message}`);
                 }
+                setMyError('We are having trouble loading the latest books, please try again later!');
             } finally {
                 setLoading(false);
             }
@@ -73,31 +40,12 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
         fetchBooks();
     }, [pageNumber, apiUrl]);
 
-    /**
-     * Handles navigation to the next or previous page based on the given action.
-     *
-     * This function updates the page number by incrementing or decrementing it
-     * depending on whether the 'next' or 'prev' action is provided. It includes
-     * error handling to manage unexpected issues gracefully, logging errors and setting
-     * an error message for the user.
-     */
     function nextPage(action: string) {
-        let nextPage = 0;
-        try {
-            if (action == 'next') {
-                nextPage = pageNumber + 1;
-                setPageNumber(nextPage);
-            } else if (action == 'prev') {
-                if (nextPage == 1) {
-                    return;
-                } else {
-                    nextPage = pageNumber - 1;
-                    setPageNumber(nextPage);
-                }
-            }
-        } catch (err) {
-            console.log(`Error on nextPage action: ${err}`)
-            setMyError('That wasn\'t supposed to happen. Please refresh or try again later.');
+        if (action === 'next') {
+            setPageNumber(pageNumber + 1);
+        } else if (action === 'prev') {
+            if (pageNumber === 1) return;
+            setPageNumber(pageNumber - 1);
         }
     }
 
@@ -147,4 +95,4 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
     );
 };
 
-export default BooksList; 
+export default BooksList;
