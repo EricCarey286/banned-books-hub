@@ -9,8 +9,8 @@ import booksRouter from "./routes/bookRouter";
 import suggestedbookRouter from "./routes/suggestedBookRouter";
 import contactFormRouter from "./routes/contactFormRouter";
 import bookImageRouter from "./routes/imageRouter";
-import { initializeCache, closeCache } from './cache.ts';
-import healthRouter from './routes/health.ts';
+import { initializeCache, closeCache } from './cache';
+import healthRouter from './routes/health';
 
 import { PORT } from './utils/config';
 import { AppError } from "./utils/helper";

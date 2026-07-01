@@ -1,6 +1,6 @@
 // server/minioCache.ts
 import { Client, ClientOptions, CopyConditions } from 'minio';
-import { getCache, setCache, deleteCache } from './cache.ts';
+import { getCache, setCache, deleteCache } from './cache';
 
 // MinIO client configuration
 const minioConfig: ClientOptions = {

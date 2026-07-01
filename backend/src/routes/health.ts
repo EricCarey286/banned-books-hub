@@ -1,6 +1,6 @@
 // server/routes/health.ts
 import { Router, Request, Response, RequestHandler } from 'express';
-import { getCacheClient, getCacheStats, cacheExists } from '../cache.ts';
+import { getCacheClient, getCacheStats, cacheExists } from '../cache';
 
 const router = Router();
 

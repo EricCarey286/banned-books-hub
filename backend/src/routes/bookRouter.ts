@@ -4,8 +4,8 @@ import crypto from 'crypto';
 import * as books from '../services/books';
 import { AppError } from '../utils/helper';
 import { authenticate } from '../middleware/auth';
-import { getOrSetCacheSWR, deleteCachePattern, deleteCache } from '../cache.ts';
-import { getCachedImageUrl, getCachedImageUrls } from '../minioCache.ts';
+import { getOrSetCacheSWR, deleteCachePattern, deleteCache } from '../cache';
+import { getCachedImageUrl, getCachedImageUrls } from '../minioCache';
 
 const router = express.Router();
 
