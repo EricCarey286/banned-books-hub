@@ -42,11 +42,13 @@ There are no tests configured for either package.
 - **Auth**: Single admin user via env vars (`ADMIN_USERNAME`, `ADMIN_PASSWORD`). Login issues a 24h JWT. Protected routes require `Authorization: Bearer <token>`.
 - **Routing**: Four routers mounted at `/books`, `/suggested_books`, `/contact_form`, `/book-image`.
 - **Services layer** (`services/`): Each router delegates to a service module (`books.ts`, `suggestedBooks.ts`, `contactForm.ts`). Database calls go through `services/db.ts` which wraps a `mysql2` connection pool.
-- **Image storage**: Book cover images are stored in MinIO (S3-compatible). The endpoint is hardcoded to `bucket-production-70f9.up.railway.app` in `utils/config.ts`. Images are served via `GET /book-image/:imgName` and uploaded via `POST /book-image/upload` (multipart form, field name `image`, optional `isbn` in body to name the file).
+- **Image storage**: Book cover images are stored in MinIO (S3-compatible). The endpoint is configured via `MINIO_URL` (parsed in `utils/config.ts`) — never hardcode it; a missing `MINIO_URL` crashes the backend at startup. Images are served via `GET /book-image/:imgName` and uploaded via `POST /book-image/upload` (multipart form, field name `image`, optional `isbn` in body to name the file).
 - **Pagination**: `DB_CONFIG.listPerPage = 15` (hardcoded); the `page` query param is accepted on `GET /books`.
 - **Error handling**: Routes call `next(err)` with `AppError` instances (from `utils/helper.ts`) that carry `statusCode` and `details`. The global error handler at the bottom of `app.ts` serializes these.
 
 ### Environment Variables
+
+> **Canonical reference**: `docs/env-vars.md` — complete variable listing with purpose, per-environment values, and examples. Update that file whenever a new variable is added.
 
 **Backend** (`backend/.env`):
 ```
@@ -66,10 +68,16 @@ VITE_URL_PREFIX   # http or https
 ```
 
 ### Deployment
-The app is deployed on Railway. The backend is an HTTP server (despite the comment saying HTTPS — TLS is terminated by Railway's proxy). CORS is restricted to `FRONTEND_URL` from env.
+The app is deployed on Railway with two isolated environments:
+- **development** — auto-deploys from the `development` branch; uses development database and `bucket-development-d7ab.up.railway.app`
+- **production** — auto-deploys from the `main` branch; uses production database and `bucket-production-70f9.up.railway.app`
+
+The backend is an HTTP server (TLS is terminated by Railway's proxy). CORS is restricted to `FRONTEND_URL` from env.
+
+Branching model: `feature/*` → `development` → `main`. See `docs/workflow.md` for the full promotion checklist and merge policy.
 
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at `specs/001-security-hardening/plan.md`.
+at `specs/002-railway-cicd-pipeline/plan.md`.
 <!-- SPECKIT END -->

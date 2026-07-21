@@ -142,6 +142,17 @@ http://localhost:3000/api/books
 
 ---
 
+## Documentation
+
+| Document | Description |
+|---|---|
+| [`docs/local-setup.md`](docs/local-setup.md) | Step-by-step guide to run the app locally from a fresh clone |
+| [`docs/railway-setup.md`](docs/railway-setup.md) | How to configure Railway development and production environments |
+| [`docs/env-vars.md`](docs/env-vars.md) | Complete environment variable reference — purpose, per-environment values, examples |
+| [`docs/workflow.md`](docs/workflow.md) | Branching workflow, merge policy, and environment promotion checklist |
+
+---
+
 ## Contributing
 
 Contributions are welcome! Please fork the repository and create a pull request with your changes.
