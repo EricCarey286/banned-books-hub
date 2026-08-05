@@ -76,8 +76,62 @@ The backend is an HTTP server (TLS is terminated by Railway's proxy). CORS is re
 
 Branching model: `feature/*` → `development` → `main`. See `docs/workflow.md` for the full promotion checklist and merge policy.
 
+### Database Migrations
+
+**Automated CI/CD Pipeline for Schema Changes**
+
+The project uses an automated migration system for database schema changes. All schema changes MUST go through the migration pipeline (no manual SQL in production).
+
+**Key Features**:
+- Version-controlled migrations in `backend/database/tables/` and `backend/database/procedures/`
+- Automatic deployment to development environment on git push to `development` branch
+- Production deployments require manual approval (GitHub Environment protection)
+- Automatic rollback on migration failure
+- Complete audit trail of all schema changes in `migrations` table
+
+**Creating a Migration**:
+```bash
+# Create table migration
+cat > backend/database/tables/{VERSION}-{description}.up.sql << 'EOF'
+-- Migration: {VERSION} - {Description}
+-- Author: your-name
+-- Date: 2026-08-05
+-- Environment: both
+-- Timeout: 10
+
+BEGIN;
+-- Your SQL here
+COMMIT;
+EOF
+
+# Create down migration (must reverse the up migration)
+cat > backend/database/tables/{VERSION}-{description}.down.sql << 'EOF'
+BEGIN;
+-- Reversal SQL here
+COMMIT;
+EOF
+
+# Commit and push to development
+git add backend/database/tables/{VERSION}-{description}.*
+git commit -m "feat: migration description"
+git push origin development  # Auto-deploys to dev via GitHub Actions
+```
+
+**Deployment**:
+- **Development**: Automatic on push to `development` branch
+- **Production**: Push to `main` branch → requires approval in GitHub Environment "production-migrations" → applies after approval
+
+**For Complete Documentation**: Read `docs/MIGRATIONS.md` for examples, patterns, testing procedures, and troubleshooting.
+
+**Environment Variables** (backend/.env):
+```
+MIGRATION_TIMEOUT=300        # Timeout per migration (seconds)
+DB_VERSION=10.4              # MariaDB version for compatibility
+SKIP_MIGRATIONS=false        # Set true to disable (dev/test only)
+```
+
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at `specs/002-railway-cicd-pipeline/plan.md`.
+at `specs/003-db-migration-pipeline/plan.md`.
 <!-- SPECKIT END -->

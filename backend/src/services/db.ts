@@ -1,7 +1,14 @@
 import mysql from "mysql2/promise";
 import { DB_CONFIG } from "../utils/config";
 
-const pool = mysql.createPool(DB_CONFIG.db);
+export const pool = mysql.createPool(DB_CONFIG.db);
+
+/**
+ * Get a connection from the pool
+ */
+export async function getConnection() {
+  return await pool.getConnection();
+}
 
 /**
  * Executes a SQL query using the provided SQL statement and parameters.
