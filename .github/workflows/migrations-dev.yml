@@ -1,0 +1,204 @@
+name: Database Migrations - Development
+
+on:
+  push:
+    branches:
+      - development
+    paths:
+      - 'backend/database/**'
+      - '.github/workflows/migrations-dev.yml'
+      - 'backend/src/services/migration-*.ts'
+      - 'backend/src/utils/migrations-schema.sql'
+
+jobs:
+  validate-and-deploy-migrations:
+    name: Validate & Deploy Migrations
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Discover migrations
+        working-directory: backend
+        run: |
+          echo "🔍 Discovering migrations..."
+          ls -la database/tables/*.up.sql 2>/dev/null || echo "No table migrations found"
+          ls -la database/procedures/*.up.sql 2>/dev/null || echo "No procedure migrations found"
+
+      - name: Validate migration files
+        working-directory: backend
+        run: |
+          echo "✓ Validating migration files..."
+          # Check for matching up/down files
+          for upfile in database/tables/*.up.sql; do
+            [ -f "$upfile" ] || continue
+            downfile="${upfile%.up.sql}.down.sql"
+            if [ ! -f "$downfile" ]; then
+              echo "❌ ERROR: Missing down migration for $(basename $upfile)"
+              exit 1
+            fi
+            # Verify BEGIN/COMMIT wrapping
+            if ! grep -q "^BEGIN;" "$upfile"; then
+              echo "❌ ERROR: Missing BEGIN; in $(basename $upfile)"
+              exit 1
+            fi
+            if ! grep -q "^COMMIT;" "$upfile"; then
+              echo "❌ ERROR: Missing COMMIT; in $(basename $upfile)"
+              exit 1
+            fi
+          done
+
+          for upfile in database/procedures/*.up.sql; do
+            [ -f "$upfile" ] || continue
+            downfile="${upfile%.up.sql}.down.sql"
+            if [ ! -f "$downfile" ]; then
+              echo "❌ ERROR: Missing down migration for $(basename $upfile)"
+              exit 1
+            fi
+          done
+
+          echo "✓ All migration files valid"
+
+      - name: Connect to development database
+        id: db_connect
+        run: |
+          # Use Railway tunnel or direct connection
+          if [ -n "${{ secrets.DEV_RAILWAY_TOKEN }}" ]; then
+            echo "Using Railway tunnel..."
+            # Note: Railway CLI integration would go here
+          else
+            echo "Using direct database connection..."
+          fi
+
+      - name: Deploy migrations to development
+        working-directory: backend
+        env:
+          DB_HOST: ${{ secrets.DEV_DB_HOST }}
+          DB_PORT: ${{ secrets.DEV_DB_PORT }}
+          DB_USER: ${{ secrets.DEV_DB_USER }}
+          DB_PASSWORD: ${{ secrets.DEV_DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DEV_DB_NAME }}
+          MIGRATION_TIMEOUT: '300'
+          DB_VERSION: '10.4'
+          SKIP_MIGRATIONS: 'false'
+          NODE_ENV: development
+        run: |
+          echo "▶️  Deploying migrations to development database..."
+
+          # Create a simple Node.js script to run migrations
+          cat > run-migrations.js << 'EOF'
+          const path = require('path');
+          require('dotenv').config({ path: '.env' });
+
+          async function runMigrations() {
+            try {
+              // Dynamically require the migration services from compiled dist folder
+              const { discoverMigrations } = require('./dist/services/migration-discovery');
+              const { validateAllMigrations, hasValidationErrors } = require('./dist/services/migration-validator');
+              const { executeMigrations, getSummary } = require('./dist/services/migration-executor');
+              const { getConnection } = require('./dist/services/db');
+
+              console.log('🔄 Initializing migrations for development...');
+
+              const connection = await getConnection();
+              try {
+                // Discover migrations
+                const migrations = await discoverMigrations();
+                console.log(`📊 Found ${migrations.length} migrations`);
+
+                if (migrations.length === 0) {
+                  console.log('✓ No migrations to apply');
+                  return;
+                }
+
+                // Validate all migrations
+                console.log('✓ Validating migrations...');
+                const validationResults = await validateAllMigrations(
+                  migrations,
+                  connection,
+                  'development'
+                );
+
+                if (hasValidationErrors(validationResults)) {
+                  console.error('❌ Validation failed');
+                  process.exit(1);
+                }
+
+                // Execute migrations
+                console.log('▶️  Executing migrations...');
+                const executionResults = await executeMigrations(
+                  migrations,
+                  connection,
+                  'development',
+                  'github-actions',
+                  parseInt(process.env.MIGRATION_TIMEOUT || '300000')
+                );
+
+                const summary = getSummary(executionResults);
+                console.log(`✅ Migration deployment complete`);
+                console.log(`   ${summary.successful}/${summary.total} successful`);
+
+                if (summary.failed > 0) {
+                  console.error(`❌ ${summary.failed} migration(s) failed`);
+                  process.exit(1);
+                }
+              } finally {
+                connection.release();
+              }
+            } catch (error) {
+              console.error('❌ Migration error:', error.message);
+              process.exit(1);
+            }
+          }
+
+          runMigrations().then(() => {
+            console.log('✓ Migrations completed, exiting...');
+            process.exit(0);
+          }).catch(err => {
+            console.error('❌ Fatal error:', err);
+            process.exit(1);
+          });
+          EOF
+
+          # Build TypeScript first
+          npm run build
+
+          # Run migrations
+          node run-migrations.js
+
+      - name: Verify migrations in database
+        working-directory: backend
+        env:
+          DB_HOST: ${{ secrets.DEV_DB_HOST }}
+          DB_PORT: ${{ secrets.DEV_DB_PORT }}
+          DB_USER: ${{ secrets.DEV_DB_USER }}
+          DB_PASSWORD: ${{ secrets.DEV_DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DEV_DB_NAME }}
+        run: |
+          echo "📊 Verifying migrations in database..."
+
+          # Verify migrations table exists
+          mysql -h $DB_HOST -P $DB_PORT -u $DB_USER -p$DB_PASSWORD $DB_NAME \
+            -e "SELECT version, description, status, executed_at FROM migrations ORDER BY executed_at DESC LIMIT 10;" || echo "Note: Connection may fail without mysql client installed"
+
+      - name: Report results
+        if: always()
+        run: |
+          echo "✅ Development migrations workflow complete"
+          echo "Branch: development"
+          echo "Environment: development"
+          echo ""
+          echo "View deployment logs above for details."

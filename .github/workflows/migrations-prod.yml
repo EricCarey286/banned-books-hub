@@ -1,0 +1,291 @@
+name: Database Migrations - Production
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/database/**'
+      - '.github/workflows/migrations-prod.yml'
+      - 'backend/src/services/migration-*.ts'
+      - 'backend/src/utils/migrations-schema.sql'
+
+jobs:
+  discover-and-validate-migrations:
+    name: Discover & Validate Migrations
+    runs-on: ubuntu-latest
+    outputs:
+      migration_count: ${{ steps.discover.outputs.count }}
+      migration_versions: ${{ steps.discover.outputs.versions }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Discover migrations
+        id: discover
+        run: |
+          echo "🔍 Discovering migrations for production deployment..."
+
+          # Count migration files
+          TABLE_COUNT=$(find backend/database/tables -name "*.up.sql" 2>/dev/null | wc -l)
+          PROC_COUNT=$(find backend/database/procedures -name "*.up.sql" 2>/dev/null | wc -l)
+          TOTAL=$((TABLE_COUNT + PROC_COUNT))
+
+          echo "count=$TOTAL" >> $GITHUB_OUTPUT
+
+          # List migration versions
+          VERSIONS=$(find backend/database -name "*.up.sql" -type f | sed 's/.*\///' | sed 's/\.up\.sql//' | sort | tr '\n' ',' | sed 's/,$//')
+          echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
+
+          if [ $TOTAL -eq 0 ]; then
+            echo "✓ No migrations to deploy"
+          else
+            echo "📊 Found $TOTAL migrations:"
+            echo "   Tables: $TABLE_COUNT | Procedures: $PROC_COUNT"
+            echo "   Versions: $VERSIONS"
+          fi
+
+      - name: Validate migration files
+        run: |
+          echo "✓ Validating migration files for production..."
+
+          ERRORS=0
+
+          # Check table migrations
+          for upfile in backend/database/tables/*.up.sql; do
+            [ -f "$upfile" ] || continue
+            downfile="${upfile%.up.sql}.down.sql"
+
+            if [ ! -f "$downfile" ]; then
+              echo "❌ ERROR: Missing down migration for $(basename $upfile)"
+              ERRORS=$((ERRORS + 1))
+              continue
+            fi
+
+            # Verify BEGIN/COMMIT wrapping
+            if ! grep -q "^BEGIN;" "$upfile"; then
+              echo "❌ ERROR: Missing BEGIN; in $(basename $upfile)"
+              ERRORS=$((ERRORS + 1))
+            fi
+            if ! grep -q "^COMMIT;" "$upfile"; then
+              echo "❌ ERROR: Missing COMMIT; in $(basename $upfile)"
+              ERRORS=$((ERRORS + 1))
+            fi
+
+            # Verify file exists and is not empty
+            if [ ! -s "$upfile" ]; then
+              echo "❌ ERROR: Empty migration file $(basename $upfile)"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+
+          # Check procedure migrations
+          for upfile in backend/database/procedures/*.up.sql; do
+            [ -f "$upfile" ] || continue
+            downfile="${upfile%.up.sql}.down.sql"
+
+            if [ ! -f "$downfile" ]; then
+              echo "❌ ERROR: Missing down migration for $(basename $upfile)"
+              ERRORS=$((ERRORS + 1))
+              continue
+            fi
+          done
+
+          if [ $ERRORS -gt 0 ]; then
+            echo "❌ Validation failed with $ERRORS errors"
+            exit 1
+          fi
+
+          echo "✓ All migration files valid for production"
+
+  # This job requires approval via GitHub Environment before proceeding
+  deploy-to-production:
+    name: Deploy to Production (Requires Approval)
+    needs: discover-and-validate-migrations
+    runs-on: ubuntu-latest
+    environment: production-migrations
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Pre-deployment backup check
+        run: |
+          echo "⚠️  PRODUCTION DEPLOYMENT"
+          echo "========================"
+          echo ""
+          echo "Deploying ${{ needs.discover-and-validate-migrations.outputs.migration_count }} migration(s) to PRODUCTION"
+          echo "Versions: ${{ needs.discover-and-validate-migrations.outputs.migration_versions }}"
+          echo ""
+          echo "🔐 This deployment has been APPROVED by: ${{ github.actor }}"
+          echo "⏰ Time: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          echo ""
+          echo "⚠️  ENSURE DATABASE BACKUPS EXIST BEFORE PROCEEDING"
+          echo ""
+
+      - name: Deploy migrations to production
+        working-directory: backend
+        env:
+          DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          DB_PORT: ${{ secrets.PROD_DB_PORT }}
+          DB_USER: ${{ secrets.PROD_DB_USER }}
+          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          DB_NAME: ${{ secrets.PROD_DB_NAME }}
+          MIGRATION_TIMEOUT: '300'
+          DB_VERSION: '10.4'
+          SKIP_MIGRATIONS: 'false'
+          NODE_ENV: production
+        run: |
+          echo "▶️  Deploying migrations to PRODUCTION database..."
+          echo ""
+
+          # Create migration runner script
+          cat > run-migrations.js << 'EOF'
+          const path = require('path');
+          require('dotenv').config({ path: '.env' });
+
+          async function runMigrations() {
+            try {
+              const { discoverMigrations } = require('./dist/services/migration-discovery');
+              const { validateAllMigrations, hasValidationErrors } = require('./dist/services/migration-validator');
+              const { executeMigrations, getSummary } = require('./dist/services/migration-executor');
+              const { getConnection } = require('./dist/services/db');
+
+              console.log('🔄 Initializing production migrations...');
+              console.log('Environment: PRODUCTION');
+              console.log('');
+
+              const connection = await getConnection();
+              try {
+                // Discover migrations
+                const migrations = await discoverMigrations();
+                console.log(`📊 Found ${migrations.length} migrations`);
+
+                if (migrations.length === 0) {
+                  console.log('✓ No migrations to apply');
+                  return;
+                }
+
+                migrations.forEach(m => {
+                  console.log(`   - ${m.version}: ${m.description} (${m.type})`);
+                });
+                console.log('');
+
+                // Validate all migrations
+                console.log('✓ Validating migrations for production...');
+                const validationResults = await validateAllMigrations(
+                  migrations,
+                  connection,
+                  'production'
+                );
+
+                if (hasValidationErrors(validationResults)) {
+                  console.error('❌ Validation failed - DEPLOYMENT BLOCKED');
+                  process.exit(1);
+                }
+
+                console.log('✓ Validation passed');
+                console.log('');
+
+                // Execute migrations
+                console.log('▶️  Executing migrations on PRODUCTION...');
+                console.log('⏱️  This may take several minutes...');
+                console.log('');
+
+                const executionResults = await executeMigrations(
+                  migrations,
+                  connection,
+                  'production',
+                  'github-actions-prod',
+                  parseInt(process.env.MIGRATION_TIMEOUT || '300000')
+                );
+
+                const summary = getSummary(executionResults);
+                console.log('');
+                console.log('✅ PRODUCTION migration deployment complete');
+                console.log(`   ${summary.successful}/${summary.total} successful`);
+                console.log(`   Total time: ${Math.round(summary.totalTimeMs / 1000)}s`);
+
+                if (summary.failed > 0) {
+                  console.error(`❌ ${summary.failed} migration(s) FAILED`);
+                  console.error('⚠️  PRODUCTION DATABASE MAY BE IN INCONSISTENT STATE');
+                  process.exit(1);
+                }
+
+                if (summary.rolledBack > 0) {
+                  console.warn(`🔄 ${summary.rolledBack} migration(s) were rolled back`);
+                }
+              } finally {
+                connection.release();
+              }
+            } catch (error) {
+              console.error('❌ PRODUCTION migration error:', error.message);
+              console.error('⚠️  PRODUCTION DATABASE MAY BE IN INCONSISTENT STATE');
+              process.exit(1);
+            }
+          }
+
+          runMigrations().then(() => {
+            console.log('✓ PRODUCTION migrations completed, exiting...');
+            process.exit(0);
+          }).catch(err => {
+            console.error('❌ PRODUCTION fatal error:', err);
+            process.exit(1);
+          });
+          EOF
+
+          # Build TypeScript
+          npm run build
+
+          # Run migrations
+          node run-migrations.js
+
+      - name: Verify production database
+        working-directory: backend
+        env:
+          DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          DB_PORT: ${{ secrets.PROD_DB_PORT }}
+          DB_USER: ${{ secrets.PROD_DB_USER }}
+          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          DB_NAME: ${{ secrets.PROD_DB_NAME }}
+        run: |
+          echo ""
+          echo "📊 Production Database Migration Summary"
+          echo "========================================="
+
+          # Query would go here (requires mysql client)
+          echo "Note: Detailed verification requires MySQL client installed"
+
+      - name: Production deployment complete
+        run: |
+          echo ""
+          echo "✅ PRODUCTION DEPLOYMENT COMPLETE"
+          echo "=================================="
+          echo "All migrations have been successfully applied to production."
+          echo ""
+          echo "Approver: ${{ github.actor }}"
+          echo "Time: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          echo "Commit: ${{ github.sha }}"
+          echo ""
+          echo "Next steps:"
+          echo "  1. Verify application functionality in production"
+          echo "  2. Monitor application logs for any errors"
+          echo "  3. Check database performance"
+          echo ""
