@@ -68,6 +68,36 @@ VITE_URL_PREFIX   # http or https
 ### Deployment
 The app is deployed on Railway. The backend is an HTTP server (despite the comment saying HTTPS — TLS is terminated by Railway's proxy). CORS is restricted to `FRONTEND_URL` from env.
 
+### Database Migrations
+
+**CRITICAL**: All database schema changes MUST be implemented as versioned migrations, not direct SQL modifications.
+
+**Creating a Migration**:
+1. Create `.up.sql` file in `backend/database/tables/` or `backend/database/procedures/`
+2. Number sequentially (e.g., `004-add-status-column.up.sql`)
+3. Wrap SQL in `BEGIN;...COMMIT;` transaction
+4. Create matching `.down.sql` file with rollback SQL
+5. Commit and push:
+   - Push to `development` → Auto-deploys to dev database
+   - Push to `main` → Requires approval, deploys to production
+
+**Example**:
+```sql
+-- backend/database/tables/004-add-status-column.up.sql
+BEGIN;
+ALTER TABLE banned_books ADD COLUMN status VARCHAR(50) DEFAULT 'active';
+COMMIT;
+```
+
+```sql
+-- backend/database/tables/004-add-status-column.down.sql
+BEGIN;
+ALTER TABLE banned_books DROP COLUMN status;
+COMMIT;
+```
+
+**Important**: Do NOT edit existing `*.Table.sql` or `*.StoredProcedure.sql` files directly. Create new migrations instead.
+
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
