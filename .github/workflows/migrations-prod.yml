@@ -242,7 +242,13 @@ jobs:
             }
           }
 
-          runMigrations();
+          runMigrations().then(() => {
+            console.log('✓ PRODUCTION migrations completed, exiting...');
+            process.exit(0);
+          }).catch(err => {
+            console.error('❌ PRODUCTION fatal error:', err);
+            process.exit(1);
+          });
           EOF
 
           # Build TypeScript
