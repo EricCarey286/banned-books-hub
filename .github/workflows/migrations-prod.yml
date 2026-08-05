@@ -163,10 +163,10 @@ jobs:
 
           async function runMigrations() {
             try {
-              const { discoverMigrations } = require('./src/services/migration-discovery');
-              const { validateAllMigrations, hasValidationErrors } = require('./src/services/migration-validator');
-              const { executeMigrations, getSummary } = require('./src/services/migration-executor');
-              const { getConnection } = require('./src/utils/db');
+              const { discoverMigrations } = require('./dist/services/migration-discovery');
+              const { validateAllMigrations, hasValidationErrors } = require('./dist/services/migration-validator');
+              const { executeMigrations, getSummary } = require('./dist/services/migration-executor');
+              const { getConnection } = require('./dist/services/db');
 
               console.log('🔄 Initializing production migrations...');
               console.log('Environment: PRODUCTION');

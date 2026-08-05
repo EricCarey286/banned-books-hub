@@ -105,11 +105,11 @@ jobs:
 
           async function runMigrations() {
             try {
-              // Dynamically require the migration services
-              const { discoverMigrations } = require('./src/services/migration-discovery');
-              const { validateAllMigrations, hasValidationErrors } = require('./src/services/migration-validator');
-              const { executeMigrations, getSummary } = require('./src/services/migration-executor');
-              const { getConnection } = require('./src/utils/db');
+              // Dynamically require the migration services from compiled dist folder
+              const { discoverMigrations } = require('./dist/services/migration-discovery');
+              const { validateAllMigrations, hasValidationErrors } = require('./dist/services/migration-validator');
+              const { executeMigrations, getSummary } = require('./dist/services/migration-executor');
+              const { getConnection } = require('./dist/services/db');
 
               console.log('🔄 Initializing migrations for development...');
 
