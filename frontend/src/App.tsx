@@ -7,6 +7,7 @@ import SuggestBookForm from './components/SuggestBookForm/SuggestBookForm';
 import ContactForm from './components/ContactForm/ContactForm';
 import AdminLogin from './components/AdminLogin/AdminLogin';
 import AdminDashboard from './components/AdminDashboard/AdminDashboard';
+import { useScrollToTop } from './hooks/useScrollToTop';
 
 import ReactGA from 'react-ga4';
 const TRACKING_ID = "G-SFFY2DBJ1B";
@@ -31,6 +32,9 @@ function AppContent() {
   const [error, setError] = useState("");
   const [username, setUsername] = useState<string>("");
   const navigate = useNavigate();
+
+  // Auto-scroll to top on navigation
+  useScrollToTop();
 
   // Helper function to get the auth token
   /**

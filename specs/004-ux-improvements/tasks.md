@@ -11,9 +11,9 @@
 
 **Goal**: Initialize infrastructure and prepare component foundation
 
-- [ ] T001 Create new `useScrollToTop` custom hook in `frontend/src/hooks/useScrollToTop.ts`
-- [ ] T002 Create new `OptimizedImage` component in `frontend/src/components/generic/Image/OptimizedImage.tsx`
-- [ ] T003 Create new `AdminLoginModal` component in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
+- [x] T001 Create new `useScrollToTop` custom hook in `frontend/src/hooks/useScrollToTop.ts`
+- [x] T002 Create new `OptimizedImage` component in `frontend/src/components/generic/Image/OptimizedImage.tsx`
+- [x] T003 Create new `AdminLoginModal` component in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
 - [ ] T004 Create navigation state types in `frontend/src/types/navigation.ts` (route, scroll history)
 
 ---
@@ -22,10 +22,10 @@
 
 **Goal**: Establish reusable patterns and shared utilities
 
-- [ ] T005 [P] Implement `useScrollToTop` hook with `useLocation()` and `useEffect` in `frontend/src/hooks/useScrollToTop.ts`
-- [ ] T006 [P] Implement `OptimizedImage` base structure with `loading` state in `frontend/src/components/generic/Image/OptimizedImage.tsx`
-- [ ] T007 [P] Implement `AdminLoginModal` form structure in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
-- [ ] T008 Add Tailwind CSS classes for modal overlay and form styling in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
+- [x] T005 [P] Implement `useScrollToTop` hook with `useLocation()` and `useEffect` in `frontend/src/hooks/useScrollToTop.ts`
+- [x] T006 [P] Implement `OptimizedImage` base structure with `loading` state in `frontend/src/components/generic/Image/OptimizedImage.tsx`
+- [x] T007 [P] Implement `AdminLoginModal` form structure in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
+- [x] T008 Add Tailwind CSS classes for modal overlay and form styling in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
 
 ---
 
@@ -44,8 +44,8 @@
 
 ### Implementation Tasks
 
-- [ ] T009 [US1] Import and use `useScrollToTop` hook in `frontend/src/App.tsx`
-- [ ] T010 [US1] Add scroll reset logic on route change in `frontend/src/App.tsx` using `useEffect` and `useLocation()`
+- [x] T009 [US1] Import and use `useScrollToTop` hook in `frontend/src/App.tsx`
+- [x] T010 [US1] Add scroll reset logic on route change in `frontend/src/App.tsx` using `useEffect` and `useLocation()`
 - [ ] T011 [US1] Test auto-scroll on navigation from home to books list in `frontend/src/App.tsx`
 - [ ] T012 [US1] Test auto-scroll when clicking book detail link in `frontend/src/App.tsx`
 - [ ] T013 [US1] Test scroll behavior with browser back button navigation in `frontend/src/App.tsx`
