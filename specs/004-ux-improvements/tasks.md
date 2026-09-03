@@ -126,7 +126,7 @@
 - [ ] T043 Verify mobile responsiveness across all new components (375px-768px viewports)
 - [ ] T044 Check accessibility: modal focus management, image alt text, keyboard navigation
 - [ ] T045 Clean up console warnings and debug statements in `frontend/src/**/*.tsx`
-- [ ] T046 Commit implementation to feature branch `004-ux-improvements`
+- [x] T046 Commit implementation to feature branch `004-ux-improvements`
 - [ ] T047 Create PR from `004-ux-improvements` to `development` with test results
 
 ---
