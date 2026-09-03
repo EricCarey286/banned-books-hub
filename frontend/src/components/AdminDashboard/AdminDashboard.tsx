@@ -20,6 +20,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ handleLogout, apiUrl, u
                 <div className="flex items-center gap-4 m-auto">
                     {username && <span>Welcome, {username}</span>}
                     <button
+                        onClick={() => window.location.href = '/'}
+                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                    >
+                        Back to Main App
+                    </button>
+                    <button
                         onClick={handleLogout}
                         className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                     >

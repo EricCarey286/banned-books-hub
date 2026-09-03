@@ -11,10 +11,10 @@
 
 **Goal**: Initialize infrastructure and prepare component foundation
 
-- [ ] T001 Create new `useScrollToTop` custom hook in `frontend/src/hooks/useScrollToTop.ts`
-- [ ] T002 Create new `OptimizedImage` component in `frontend/src/components/generic/Image/OptimizedImage.tsx`
-- [ ] T003 Create new `AdminLoginModal` component in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
-- [ ] T004 Create navigation state types in `frontend/src/types/navigation.ts` (route, scroll history)
+- [x] T001 Create new `useScrollToTop` custom hook in `frontend/src/hooks/useScrollToTop.ts`
+- [x] T002 Create new `OptimizedImage` component in `frontend/src/components/generic/Image/OptimizedImage.tsx`
+- [x] T003 Create new `AdminLoginModal` component in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
+- [x] T004 Create navigation state types in `frontend/src/types/navigation.ts` (route, scroll history)
 
 ---
 
@@ -22,10 +22,10 @@
 
 **Goal**: Establish reusable patterns and shared utilities
 
-- [ ] T005 [P] Implement `useScrollToTop` hook with `useLocation()` and `useEffect` in `frontend/src/hooks/useScrollToTop.ts`
-- [ ] T006 [P] Implement `OptimizedImage` base structure with `loading` state in `frontend/src/components/generic/Image/OptimizedImage.tsx`
-- [ ] T007 [P] Implement `AdminLoginModal` form structure in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
-- [ ] T008 Add Tailwind CSS classes for modal overlay and form styling in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
+- [x] T005 [P] Implement `useScrollToTop` hook with `useLocation()` and `useEffect` in `frontend/src/hooks/useScrollToTop.ts`
+- [x] T006 [P] Implement `OptimizedImage` base structure with `loading` state in `frontend/src/components/generic/Image/OptimizedImage.tsx`
+- [x] T007 [P] Implement `AdminLoginModal` form structure in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
+- [x] T008 Add Tailwind CSS classes for modal overlay and form styling in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
 
 ---
 
@@ -44,12 +44,12 @@
 
 ### Implementation Tasks
 
-- [ ] T009 [US1] Import and use `useScrollToTop` hook in `frontend/src/App.tsx`
-- [ ] T010 [US1] Add scroll reset logic on route change in `frontend/src/App.tsx` using `useEffect` and `useLocation()`
+- [x] T009 [US1] Import and use `useScrollToTop` hook in `frontend/src/App.tsx`
+- [x] T010 [US1] Add scroll reset logic on route change in `frontend/src/App.tsx` using `useEffect` and `useLocation()`
 - [ ] T011 [US1] Test auto-scroll on navigation from home to books list in `frontend/src/App.tsx`
 - [ ] T012 [US1] Test auto-scroll when clicking book detail link in `frontend/src/App.tsx`
 - [ ] T013 [US1] Test scroll behavior with browser back button navigation in `frontend/src/App.tsx`
-- [ ] T014 [US1] Add debounce to scroll function to prevent jank in `frontend/src/hooks/useScrollToTop.ts`
+- [x] T014 [US1] Add debounce to scroll function to prevent jank in `frontend/src/hooks/useScrollToTop.ts`
 - [ ] T015 [US1] Test mobile scroll-to-top on viewport sizes 375px-768px in `frontend/src/App.tsx`
 
 ---
@@ -70,14 +70,14 @@
 
 ### Implementation Tasks
 
-- [ ] T016 [US2] Modify `frontend/src/components/Navigation.tsx` to add "Admin" link with modal trigger
-- [ ] T017 [US2] Implement modal open/close state in `frontend/src/App.tsx`
-- [ ] T018 [US2] Connect `AdminLoginModal` to existing login API in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
-- [ ] T019 [US2] Add login error handling and display in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
-- [ ] T020 [US2] Update `frontend/src/App.tsx` auth state on successful admin login
-- [ ] T021 [US2] Update `frontend/src/components/Navigation.tsx` to show login status and logout button
-- [ ] T022 [US2] Add "Back to Main App" button in `frontend/src/components/AdminDashboard/AdminDashboard.tsx`
-- [ ] T023 [US2] Implement navigation back to main app in `frontend/src/components/AdminDashboard/AdminDashboard.tsx` (route to `/`)
+- [x] T016 [US2] Modify `frontend/src/components/Navigation.tsx` to add "Admin" link with modal trigger
+- [x] T017 [US2] Implement modal open/close state in `frontend/src/App.tsx`
+- [x] T018 [US2] Connect `AdminLoginModal` to existing login API in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
+- [x] T019 [US2] Add login error handling and display in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
+- [x] T020 [US2] Update `frontend/src/App.tsx` auth state on successful admin login
+- [x] T021 [US2] Update `frontend/src/components/Navigation.tsx` to show login status and logout button
+- [x] T022 [US2] Add "Back to Main App" button in `frontend/src/components/AdminDashboard/AdminDashboard.tsx`
+- [x] T023 [US2] Implement navigation back to main app in `frontend/src/components/AdminDashboard/AdminDashboard.tsx` (route to `/`)
 - [ ] T024 [US2] Test admin login flow: click Admin → enter credentials → verify dashboard access
 - [ ] T025 [US2] Test logout: click logout button → verify returned to home page and logged out
 - [ ] T026 [US2] Test context switching: main app → admin → back to main preserves scroll position and state
@@ -101,13 +101,13 @@
 
 ### Implementation Tasks
 
-- [ ] T028 [P] [US3] Implement lazy loading in `OptimizedImage` using `IntersectionObserver` in `frontend/src/components/generic/Image/OptimizedImage.tsx`
-- [ ] T029 [P] [US3] Add placeholder/skeleton UI in `OptimizedImage` component in `frontend/src/components/generic/Image/OptimizedImage.tsx`
-- [ ] T030 [P] [US3] Add error handling for failed image loads in `frontend/src/components/generic/Image/OptimizedImage.tsx`
-- [ ] T031 [US3] Replace `<img>` tags in `frontend/src/components/generic/Card/BookCard.tsx` with `<OptimizedImage>`
-- [ ] T032 [US3] Replace `<img>` tags in `frontend/src/components/FeaturedBook/FeaturedBook.tsx` with `<OptimizedImage>`
-- [ ] T033 [US3] Replace `<img>` tags in `frontend/src/components/BookList/BookList.tsx` with `<OptimizedImage>`
-- [ ] T034 [US3] Add native HTML `loading="lazy"` attribute as fallback in `frontend/src/components/generic/Image/OptimizedImage.tsx`
+- [x] T028 [P] [US3] Implement lazy loading in `OptimizedImage` using `IntersectionObserver` in `frontend/src/components/generic/Image/OptimizedImage.tsx`
+- [x] T029 [P] [US3] Add placeholder/skeleton UI in `OptimizedImage` component in `frontend/src/components/generic/Image/OptimizedImage.tsx`
+- [x] T030 [P] [US3] Add error handling for failed image loads in `frontend/src/components/generic/Image/OptimizedImage.tsx`
+- [x] T031 [US3] Replace `<img>` tags in `frontend/src/components/generic/Card/BookCard.tsx` with `<OptimizedImage>`
+- [x] T032 [US3] Replace `<img>` tags in `frontend/src/components/FeaturedBook/FeaturedBook.tsx` with `<OptimizedImage>`
+- [x] T033 [US3] Replace `<img>` tags in `frontend/src/components/BookList/BookList.tsx` with `<OptimizedImage>`
+- [x] T034 [US3] Add native HTML `loading="lazy"` attribute as fallback in `frontend/src/components/generic/Image/OptimizedImage.tsx`
 - [ ] T035 [US3] Test image loading time on home page using DevTools Network tab
 - [ ] T036 [US3] Test lazy loading: scroll through books list and verify images load on-scroll
 - [ ] T037 [US3] Test placeholder display: verify skeleton/placeholder shown while image loads
@@ -126,7 +126,7 @@
 - [ ] T043 Verify mobile responsiveness across all new components (375px-768px viewports)
 - [ ] T044 Check accessibility: modal focus management, image alt text, keyboard navigation
 - [ ] T045 Clean up console warnings and debug statements in `frontend/src/**/*.tsx`
-- [ ] T046 Commit implementation to feature branch `004-ux-improvements`
+- [x] T046 Commit implementation to feature branch `004-ux-improvements`
 - [ ] T047 Create PR from `004-ux-improvements` to `development` with test results
 
 ---
