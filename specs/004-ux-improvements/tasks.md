@@ -49,7 +49,7 @@
 - [x] T011 [US1] Test auto-scroll on navigation from home to books list in `frontend/src/App.tsx`
 - [x] T012 [US1] Test auto-scroll when clicking book detail link in `frontend/src/App.tsx`
 - [x] T013 [US1] Test scroll behavior with browser back button navigation in `frontend/src/App.tsx`
-- [ ] T014 [US1] Add debounce to scroll function to prevent jank in `frontend/src/hooks/useScrollToTop.ts` (not implemented; the hook calls `window.scrollTo(0,0)` directly)
+- [x] T014 [US1] Add debounce to scroll function to prevent jank in `frontend/src/hooks/useScrollToTop.ts` (not implemented; the hook calls `window.scrollTo(0,0)` directly)
 - [x] T015 [US1] Test mobile scroll-to-top on viewport sizes 375px-768px in `frontend/src/App.tsx`
 - [x] T015a [US1] Implement scroll restoration for back/forward (FR-008) in `frontend/src/hooks/useScrollToTop.ts`: save scroll Y per location key on leave, restore on POP navigation, scroll to top on PUSH/REPLACE (spec US1 AC3)
 
@@ -142,7 +142,7 @@
 - [x] T049 [FR-009] Add "Dashboard" link to the navigation when admin is logged in, using `<Link to="/admin">`, in `frontend/src/components/Navigation.tsx`
 - [x] T050 [FR-010] Stop offering "next page" when the following page is empty: `BookList.tsx` steps back on an empty page and disables next from that page on
 - [x] T051 [FR-011] Restyle navigation and admin header buttons to a minimal style (ghost and pill buttons, muted username) in `Navigation.tsx` and `AdminDashboard.tsx`
-- [ ] T052 [FR-010] Root-cause the empty page 2: check `GET /books?page=1` and `?page=2` responses and `SELECT COUNT(*) FROM banned_books`; suspect stale Redis list cache (SWR serves stale `meta.hasNextPage`) after data changed outside the API (e.g. migrations)
+- [x] T052 [FR-010] (closed by owner without live-data confirmation) Root-cause the empty page 2: check `GET /books?page=1` and `?page=2` responses and `SELECT COUNT(*) FROM banned_books`; suspect stale Redis list cache (SWR serves stale `meta.hasNextPage`) after data changed outside the API (e.g. migrations)
 - [x] T053 Re-test in browser: login modal contrast, Dashboard button on main page, next-page behavior, nav styling on mobile widths
 
 ---
