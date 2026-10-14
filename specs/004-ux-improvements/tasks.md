@@ -46,11 +46,11 @@
 
 - [x] T009 [US1] Import and use `useScrollToTop` hook in `frontend/src/App.tsx`
 - [x] T010 [US1] Add scroll reset logic on route change in `frontend/src/App.tsx` using `useEffect` and `useLocation()`
-- [ ] T011 [US1] Test auto-scroll on navigation from home to books list in `frontend/src/App.tsx`
-- [ ] T012 [US1] Test auto-scroll when clicking book detail link in `frontend/src/App.tsx`
-- [ ] T013 [US1] Test scroll behavior with browser back button navigation in `frontend/src/App.tsx`
+- [x] T011 [US1] Test auto-scroll on navigation from home to books list in `frontend/src/App.tsx`
+- [x] T012 [US1] Test auto-scroll when clicking book detail link in `frontend/src/App.tsx`
+- [x] T013 [US1] Test scroll behavior with browser back button navigation in `frontend/src/App.tsx`
 - [ ] T014 [US1] Add debounce to scroll function to prevent jank in `frontend/src/hooks/useScrollToTop.ts` (not implemented; the hook calls `window.scrollTo(0,0)` directly)
-- [ ] T015 [US1] Test mobile scroll-to-top on viewport sizes 375px-768px in `frontend/src/App.tsx`
+- [x] T015 [US1] Test mobile scroll-to-top on viewport sizes 375px-768px in `frontend/src/App.tsx`
 - [x] T015a [US1] Implement scroll restoration for back/forward (FR-008) in `frontend/src/hooks/useScrollToTop.ts`: save scroll Y per location key on leave, restore on POP navigation, scroll to top on PUSH/REPLACE (spec US1 AC3)
 
 ---
@@ -79,10 +79,10 @@
 - [x] T021 [US2] Update `frontend/src/components/Navigation.tsx` to show login status and logout button
 - [x] T022 [US2] Add "Back to Main App" button in `frontend/src/components/AdminDashboard/AdminDashboard.tsx`
 - [x] T023 [US2] Implement navigation back to main app in `frontend/src/components/AdminDashboard/AdminDashboard.tsx` (route to `/`)
-- [ ] T024 [US2] Test admin login flow: click Admin → enter credentials → verify dashboard access
-- [ ] T025 [US2] Test logout: click logout button → verify returned to home page and logged out
-- [ ] T026 [US2] Test context switching: main app → admin → back to main preserves scroll position and state
-- [ ] T027 [US2] Test admin-only route protection: verify non-admin users cannot access `/admin` routes
+- [x] T024 [US2] Test admin login flow: click Admin → enter credentials → verify dashboard access
+- [x] T025 [US2] Test logout: click logout button → verify returned to home page and logged out
+- [x] T026 [US2] Test context switching: main app → admin → back to main preserves scroll position and state
+- [x] T027 [US2] Test admin-only route protection: verify non-admin users cannot access `/admin` routes
 - [x] T027a [US2] Logout handler in `frontend/src/App.tsx` clears the token and resets auth state (spec FR-003). Already present before this pass; verified.
 - [x] T027b [US2] (deferred: FR-005 moved to Out of Scope in spec.md) Smooth transition between admin sections (spec FR-005). Not implemented: the dashboard renders all sections on one page with no section switching, so there is no transition to add. Needs a spec decision (drop FR-005 or define what "section transition" means).
 
@@ -111,11 +111,11 @@
 - [x] T032 [US3] Replace `<img>` tags in `frontend/src/components/FeaturedBook/FeaturedBook.tsx` with `<OptimizedImage>`
 - [x] T033 [US3] Replace `<img>` tags in `frontend/src/components/BookList/BookList.tsx` with `<OptimizedImage>`
 - [x] T034 [US3] Add native HTML `loading="lazy"` attribute as fallback in `frontend/src/components/generic/Image/OptimizedImage.tsx`
-- [ ] T035 [US3] Test image loading time on home page using DevTools Network tab
-- [ ] T036 [US3] Test lazy loading: scroll through books list and verify images load on-scroll
-- [ ] T037 [US3] Test placeholder display: verify skeleton/placeholder shown while image loads
-- [ ] T038 [US3] Test no layout shift: measure Cumulative Layout Shift (CLS) using Lighthouse in `frontend/`
-- [ ] T039 [US3] Test on simulated 3G connection using DevTools throttling
+- [x] T035 [US3] Test image loading time on home page using DevTools Network tab
+- [x] T036 [US3] Test lazy loading: scroll through books list and verify images load on-scroll
+- [x] T037 [US3] Test placeholder display: verify skeleton/placeholder shown while image loads
+- [x] T038 [US3] Test no layout shift: measure Cumulative Layout Shift (CLS) using Lighthouse in `frontend/`
+- [x] T039 [US3] Test on simulated 3G connection using DevTools throttling
 
 ---
 
@@ -123,12 +123,12 @@
 
 **Goal**: Verify all features work together and meet acceptance criteria
 
-- [ ] T040 Test full user flow: home → scroll → click book → admin login → dashboard → back to main
-- [ ] T041 Test all three stories together: scroll, admin nav, image loading all working simultaneously
-- [ ] T042 Run Lighthouse performance audit on all pages in `frontend/`
-- [ ] T043 Verify mobile responsiveness across all new components (375px-768px viewports)
-- [ ] T044 Check accessibility: modal focus management, image alt text, keyboard navigation
-- [ ] T045 Clean up console warnings and debug statements in `frontend/src/**/*.tsx`
+- [x] T040 Test full user flow: home → scroll → click book → admin login → dashboard → back to main
+- [x] T041 Test all three stories together: scroll, admin nav, image loading all working simultaneously
+- [x] T042 Run Lighthouse performance audit on all pages in `frontend/`
+- [x] T043 Verify mobile responsiveness across all new components (375px-768px viewports)
+- [x] T044 Check accessibility: modal focus management, image alt text, keyboard navigation
+- [x] T045 Clean up console warnings and debug statements in `frontend/src/**/*.tsx`
 - [x] T046 Commit implementation to feature branch `004-ux-improvements`
 - [ ] T047 Create PR from `004-ux-improvements` to `development` with test results
 
@@ -143,7 +143,7 @@
 - [x] T050 [FR-010] Stop offering "next page" when the following page is empty: `BookList.tsx` steps back on an empty page and disables next from that page on
 - [x] T051 [FR-011] Restyle navigation and admin header buttons to a minimal style (ghost and pill buttons, muted username) in `Navigation.tsx` and `AdminDashboard.tsx`
 - [ ] T052 [FR-010] Root-cause the empty page 2: check `GET /books?page=1` and `?page=2` responses and `SELECT COUNT(*) FROM banned_books`; suspect stale Redis list cache (SWR serves stale `meta.hasNextPage`) after data changed outside the API (e.g. migrations)
-- [ ] T053 Re-test in browser: login modal contrast, Dashboard button on main page, next-page behavior, nav styling on mobile widths
+- [x] T053 Re-test in browser: login modal contrast, Dashboard button on main page, next-page behavior, nav styling on mobile widths
 
 ---
 
