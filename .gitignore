@@ -4,7 +4,6 @@ build/
 *.log
 .env
 .env.*
-!.env.example
 .DS_Store
 certs/
 certs/server.cert

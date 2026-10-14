@@ -1,10 +1,21 @@
 // server/minioCache.ts
-import { Client, CopyConditions } from 'minio';
-import { minioClient } from './utils/config';
+import { Client, ClientOptions, CopyConditions } from 'minio';
 import { getCache, setCache, deleteCache } from './cache';
 
+// MinIO client configuration
+const minioConfig: ClientOptions = {
+  endPoint: process.env.MINIO_ENDPOINT || 'localhost',
+  port: parseInt(process.env.MINIO_PORT || '9000', 10),
+  useSSL: process.env.MINIO_USE_SSL === 'true',
+  accessKey: process.env.MINIO_ACCESS_KEY || '',
+  secretKey: process.env.MINIO_SECRET_KEY || '',
+};
+
+// Initialize MinIO client
+const minioClient = new Client(minioConfig);
+
 // Configuration constants
-const BUCKET_NAME = process.env.MINIO_BUCKET_NAME || 'book-images';
+const BUCKET_NAME = process.env.MINIO_BUCKET_NAME || 'books';
 
 // Cache duration for pre-signed URLs (in seconds)
 // Set to 23 hours to ensure URL is valid when cached

@@ -15,6 +15,8 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
     const [pageNumber, setPageNumber] = useState<number>(1);
     const [loading, setLoading] = useState<boolean>(true);
     const [hasNextPage, setHasNextPage] = useState(true);
+    // Last page known to have books, set when a requested page comes back empty
+    const [lastPageWithBooks, setLastPageWithBooks] = useState<number | null>(null);
 
     useEffect(() => {
         const fetchBooks = async () => {
@@ -25,6 +27,12 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
                     throw new Error(`Error: ${response.status} ${response.statusText}`);
                 }
                 const data = await response.json();
+                if (data.data.length === 0 && pageNumber > 1) {
+                    // Page is empty (e.g. stale cache or deleted rows): step back, and stop offering "next"
+                    setLastPageWithBooks(pageNumber - 1);
+                    setPageNumber(pageNumber - 1);
+                    return;
+                }
                 setBooks(data.data);
                 setHasNextPage(data.meta.hasNextPage);
             } catch (err: unknown) {
@@ -89,7 +97,12 @@ const BooksList: React.FC<BookListProps> = ({ apiUrl }) => {
             </div>
             <div className='flex justify-between items-center'>
                 <PageButton onClick={() => nextPage('prev')} action='prev' disabled={pageNumber === 1} currentPage={pageNumber} />
-                <PageButton onClick={() => nextPage('next')} action='next' disabled={!hasNextPage} currentPage={pageNumber} />
+                <PageButton
+                    onClick={() => nextPage('next')}
+                    action='next'
+                    disabled={!hasNextPage || (lastPageWithBooks !== null && pageNumber >= lastPageWithBooks)}
+                    currentPage={pageNumber}
+                />
             </div>
         </>
     );

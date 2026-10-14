@@ -42,13 +42,11 @@ There are no tests configured for either package.
 - **Auth**: Single admin user via env vars (`ADMIN_USERNAME`, `ADMIN_PASSWORD`). Login issues a 24h JWT. Protected routes require `Authorization: Bearer <token>`.
 - **Routing**: Four routers mounted at `/books`, `/suggested_books`, `/contact_form`, `/book-image`.
 - **Services layer** (`services/`): Each router delegates to a service module (`books.ts`, `suggestedBooks.ts`, `contactForm.ts`). Database calls go through `services/db.ts` which wraps a `mysql2` connection pool.
-- **Image storage**: Book cover images are stored in MinIO (S3-compatible). The endpoint is configured via `MINIO_URL` (parsed in `utils/config.ts`) — never hardcode it; a missing `MINIO_URL` crashes the backend at startup. Images are served via `GET /book-image/:imgName` and uploaded via `POST /book-image/upload` (multipart form, field name `image`, optional `isbn` in body to name the file).
+- **Image storage**: Book cover images are stored in MinIO (S3-compatible). The endpoint is hardcoded to `bucket-production-70f9.up.railway.app` in `utils/config.ts`. Images are served via `GET /book-image/:imgName` and uploaded via `POST /book-image/upload` (multipart form, field name `image`, optional `isbn` in body to name the file).
 - **Pagination**: `DB_CONFIG.listPerPage = 15` (hardcoded); the `page` query param is accepted on `GET /books`.
 - **Error handling**: Routes call `next(err)` with `AppError` instances (from `utils/helper.ts`) that carry `statusCode` and `details`. The global error handler at the bottom of `app.ts` serializes these.
 
 ### Environment Variables
-
-> **Canonical reference**: `docs/env-vars.md` — complete variable listing with purpose, per-environment values, and examples. Update that file whenever a new variable is added.
 
 **Backend** (`backend/.env`):
 ```
@@ -68,70 +66,40 @@ VITE_URL_PREFIX   # http or https
 ```
 
 ### Deployment
-The app is deployed on Railway with two isolated environments:
-- **development** — auto-deploys from the `development` branch; uses development database and `bucket-development-d7ab.up.railway.app`
-- **production** — auto-deploys from the `main` branch; uses production database and `bucket-production-70f9.up.railway.app`
-
-The backend is an HTTP server (TLS is terminated by Railway's proxy). CORS is restricted to `FRONTEND_URL` from env.
-
-Branching model: `feature/*` → `development` → `main`. See `docs/workflow.md` for the full promotion checklist and merge policy.
+The app is deployed on Railway. The backend is an HTTP server (despite the comment saying HTTPS — TLS is terminated by Railway's proxy). CORS is restricted to `FRONTEND_URL` from env.
 
 ### Database Migrations
 
-**Automated CI/CD Pipeline for Schema Changes**
-
-The project uses an automated migration system for database schema changes. All schema changes MUST go through the migration pipeline (no manual SQL in production).
-
-**Key Features**:
-- Version-controlled migrations in `backend/database/tables/` and `backend/database/procedures/`
-- Automatic deployment to development environment on git push to `development` branch
-- Production deployments require manual approval (GitHub Environment protection)
-- Automatic rollback on migration failure
-- Complete audit trail of all schema changes in `migrations` table
+**CRITICAL**: All database schema changes MUST be implemented as versioned migrations, not direct SQL modifications.
 
 **Creating a Migration**:
-```bash
-# Create table migration
-cat > backend/database/tables/{VERSION}-{description}.up.sql << 'EOF'
--- Migration: {VERSION} - {Description}
--- Author: your-name
--- Date: 2026-08-05
--- Environment: both
--- Timeout: 10
+1. Create `.up.sql` file in `backend/database/tables/` or `backend/database/procedures/`
+2. Number sequentially (e.g., `004-add-status-column.up.sql`)
+3. Wrap SQL in `BEGIN;...COMMIT;` transaction
+4. Create matching `.down.sql` file with rollback SQL
+5. Commit and push:
+   - Push to `development` → Auto-deploys to dev database
+   - Push to `main` → Requires approval, deploys to production
 
+**Example**:
+```sql
+-- backend/database/tables/004-add-status-column.up.sql
 BEGIN;
--- Your SQL here
+ALTER TABLE banned_books ADD COLUMN status VARCHAR(50) DEFAULT 'active';
 COMMIT;
-EOF
+```
 
-# Create down migration (must reverse the up migration)
-cat > backend/database/tables/{VERSION}-{description}.down.sql << 'EOF'
+```sql
+-- backend/database/tables/004-add-status-column.down.sql
 BEGIN;
--- Reversal SQL here
+ALTER TABLE banned_books DROP COLUMN status;
 COMMIT;
-EOF
-
-# Commit and push to development
-git add backend/database/tables/{VERSION}-{description}.*
-git commit -m "feat: migration description"
-git push origin development  # Auto-deploys to dev via GitHub Actions
 ```
 
-**Deployment**:
-- **Development**: Automatic on push to `development` branch
-- **Production**: Push to `main` branch → requires approval in GitHub Environment "production-migrations" → applies after approval
-
-**For Complete Documentation**: Read `docs/MIGRATIONS.md` for examples, patterns, testing procedures, and troubleshooting.
-
-**Environment Variables** (backend/.env):
-```
-MIGRATION_TIMEOUT=300        # Timeout per migration (seconds)
-DB_VERSION=10.4              # MariaDB version for compatibility
-SKIP_MIGRATIONS=false        # Set true to disable (dev/test only)
-```
+**Important**: Do NOT edit existing `*.Table.sql` or `*.StoredProcedure.sql` files directly. Create new migrations instead.
 
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at `specs/003-db-migration-pipeline/plan.md`.
+at `specs/004-ux-improvements/plan.md`.
 <!-- SPECKIT END -->
