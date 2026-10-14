@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { buildUrl } from '../../utils/api';
 
 interface AdminLoginModalProps {
   isOpen: boolean;
@@ -24,7 +25,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${apiUrl}/admin/login`, {
+      const response = await fetch(buildUrl(apiUrl, '/api/admin/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),

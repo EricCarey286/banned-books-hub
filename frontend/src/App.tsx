@@ -10,13 +10,11 @@ import AdminDashboard from './components/AdminDashboard/AdminDashboard';
 import { AdminLoginModal } from './components/AdminLogin/AdminLoginModal';
 import { Navigation } from './components/Navigation';
 import { useScrollToTop } from './hooks/useScrollToTop';
+import { API_URL, URL_PREFIX } from './utils/api';
 
 import ReactGA from 'react-ga4';
 const TRACKING_ID = "G-SFFY2DBJ1B";
 ReactGA.initialize(TRACKING_ID);
-
-const API_URL = import.meta.env.VITE_API_URL; //backend URL
-const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
 
 // Create a component wrapper that has access to routing hooks
 /**
@@ -177,7 +175,7 @@ function AppContent() {
         isOpen={isAdminLoginModalOpen}
         onClose={() => setIsAdminLoginModalOpen(false)}
         onLoginSuccess={handleAdminLoginSuccess}
-        apiUrl={`${URL_PREFIX}://${API_URL}/api`}
+        apiUrl={API_URL}
       />
       <Routes>
         {/* Public Routes */}

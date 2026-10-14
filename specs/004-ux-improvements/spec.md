@@ -38,7 +38,7 @@ Users face friction when switching between the main application and admin dashbo
 
 1. **Given** user is on the home page, **When** user clicks "Admin" in navigation, **Then** an admin login form appears smoothly (modal or inline) without navigating away
 2. **Given** user is logged in as admin and viewing the admin dashboard, **When** user clicks "Back to Main" or "Main App", **Then** they return to the main app seamlessly
-3. **Given** user is on the admin dashboard, **When** user navigates between admin sections (books, contact forms, suggested books), **Then** transitions are smooth without jarring page reloads
+3. ~~**Given** user is on the admin dashboard, **When** user navigates between admin sections (books, contact forms, suggested books), **Then** transitions are smooth without jarring page reloads~~ *Deferred to a later feature (see Out of Scope).*
 4. **Given** user is logged in as admin, **When** they view the navigation menu, **Then** they can see a clear indicator they're logged in and can log out with one click
 5. **Given** user is logged in as admin and on the main app, **When** they click "Dashboard" in navigation, **Then** they return to the admin dashboard without re-entering credentials
 6. **Given** user is logged in as admin and on the admin dashboard, **When** they click "Back to Main App" and then "Dashboard", **Then** the dashboard shows with its previous state
@@ -76,7 +76,7 @@ Images on the site load slowly, creating wait times for users browsing books. Bo
 - **FR-002**: System MUST provide a smooth, integrated admin login experience accessible from the main app without navigating away
 - **FR-003**: System MUST display a clear indicator when user is logged in as admin
 - **FR-004**: System MUST provide an easy way to return from admin dashboard to the main application
-- **FR-005**: Users MUST be able to navigate between admin sections (books, contact forms, suggested books) with smooth transitions
+- **FR-005**: ~~Users MUST be able to navigate between admin sections with smooth transitions~~ *Deferred to a later feature (see Out of Scope).*
 - **FR-006**: System MUST optimize image loading with lazy loading or progressive image delivery
 - **FR-007**: System MUST display placeholder or skeleton content while images are loading
 - **FR-008**: System MUST handle browser back/forward buttons by restoring the previous scroll position on that page; link navigation scrolls to top
@@ -100,6 +100,10 @@ Images on the site load slowly, creating wait times for users browsing books. Bo
 - **SC-004**: Book cover images load and display within 2 seconds on standard internet connection (3G/4G)
 - **SC-005**: Users report improved satisfaction with navigation experience (qualitative feedback)
 - **SC-006**: Mobile scroll-to-top works on all viewport sizes including accounting for browser UI elements
+
+## Out of Scope
+
+- Smooth transitions between admin sections (books, contact forms, suggested books) — the dashboard keeps its single-page layout for this feature; transitions will be specified in a later feature (formerly FR-005 and US2 AC3)
 
 ## Assumptions
 

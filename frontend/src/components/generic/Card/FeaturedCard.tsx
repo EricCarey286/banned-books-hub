@@ -2,8 +2,7 @@ import { ReactNode } from "react";
 import Card from "./Card";
 import defaultImg from "../../../assets/book-thumbnail-default.png"
 import { OptimizedImage } from "../Image/OptimizedImage";
-
-const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
+import { URL_PREFIX } from "../../../utils/api";
 
 interface Book {
     id: number;

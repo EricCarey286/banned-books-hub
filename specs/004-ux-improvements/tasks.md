@@ -14,7 +14,7 @@
 - [x] T001 Create new `useScrollToTop` custom hook in `frontend/src/hooks/useScrollToTop.ts`
 - [x] T002 Create new `OptimizedImage` component in `frontend/src/components/generic/Image/OptimizedImage.tsx`
 - [x] T003 Create new `AdminLoginModal` component in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`
-- [x] T004 Create navigation state types in `frontend/src/types/navigation.ts` (route, scroll history)
+- [x] T004 Create navigation state types in `frontend/src/types/navigation.ts` (route, scroll history) — file removed in T058
 
 ---
 
@@ -84,7 +84,7 @@
 - [ ] T026 [US2] Test context switching: main app → admin → back to main preserves scroll position and state
 - [ ] T027 [US2] Test admin-only route protection: verify non-admin users cannot access `/admin` routes
 - [x] T027a [US2] Logout handler in `frontend/src/App.tsx` clears the token and resets auth state (spec FR-003). Already present before this pass; verified.
-- [ ] T027b [US2] Smooth transition between admin sections (spec FR-005). Not implemented: the dashboard renders all sections on one page with no section switching, so there is no transition to add. Needs a spec decision (drop FR-005 or define what "section transition" means).
+- [x] T027b [US2] (deferred: FR-005 moved to Out of Scope in spec.md) Smooth transition between admin sections (spec FR-005). Not implemented: the dashboard renders all sections on one page with no section switching, so there is no transition to add. Needs a spec decision (drop FR-005 or define what "section transition" means).
 
 ---
 
@@ -264,3 +264,13 @@ Phase 6 integration and testing:
 | Mobile support | 375px+ | Device toolbar test |
 | Accessibility | WCAG 2.1 AA | Manual keyboard/screen reader |
 
+
+## Phase 8: Convergence
+
+**Source**: `/speckit-converge` assessment of the code at commit `6b4617f` against spec, plan, and constitution
+
+- [x] T054 [CRITICAL] Build the admin login URL through `frontend/src/utils/api.ts` instead of concatenating `apiUrl` in `frontend/src/components/AdminLogin/AdminLoginModal.tsx`; pass the host only, as the other components do (per Constitution II: components MUST NOT construct API URLs directly) (contradicts)
+- [x] T055 [CRITICAL] Move the `VITE_API_URL` and `VITE_URL_PREFIX` reads in `frontend/src/App.tsx` and `frontend/src/components/generic/Card/FeaturedCard.tsx` into `frontend/src/utils/api.ts` (per Constitution V: env vars MUST be consumed through a single shared utility) (contradicts)
+- [x] T056 [HIGH] Ensure cached book list pages cannot report `hasNextPage: true` for an empty next page: review the list route's `staleTtlSeconds` (`BOOK_LIST_TTL * 6` in `backend/src/routes/bookRouter.ts`) and confirm cache invalidation covers out-of-band data changes, per FR-010 (partial)
+- [x] T057 [MEDIUM] Resolve FR-005 (admin section transitions): either add section switching to `frontend/src/components/AdminDashboard/AdminDashboard.tsx` or amend FR-005 in `spec.md` to match the single-page dashboard layout, per FR-005 (missing)
+- [x] T058 [LOW] Remove or use `frontend/src/types/navigation.ts` (`NavigationState` and `ScrollHistory` are unused, and plan Key Entities says no scroll history is stored), per T004 (unrequested)
