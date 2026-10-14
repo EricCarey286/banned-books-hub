@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import defaultImg from '../../../assets/book-thumbnail-default.png';
 
 interface OptimizedImageProps {
   src: string;
@@ -55,21 +56,15 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       {isLoading && (
         <div className={`w-full h-full ${placeholderClassName} animate-pulse`} />
       )}
-      {!hasError ? (
-        <img
-          ref={imgRef}
-          src={isVisible ? src : undefined}
-          alt={alt}
-          loading="lazy"
-          onLoad={handleLoad}
-          onError={handleError}
-          className={`${className} ${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
-        />
-      ) : (
-        <div className={`w-full h-full bg-gray-300 flex items-center justify-center`}>
-          <span className="text-gray-500 text-sm">Failed to load image</span>
-        </div>
-      )}
+      <img
+        ref={imgRef}
+        src={hasError ? defaultImg : isVisible ? src : undefined}
+        alt={alt}
+        loading="lazy"
+        onLoad={handleLoad}
+        onError={handleError}
+        className={`${className} ${isLoaded || hasError ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
+      />
     </div>
   );
 };

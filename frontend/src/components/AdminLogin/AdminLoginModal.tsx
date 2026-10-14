@@ -50,8 +50,8 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-8 w-96 max-w-full">
-        <h2 className="text-2xl font-bold mb-6">Admin Login</h2>
+      <div className="bg-white text-gray-900 rounded-lg shadow-lg p-8 w-96 max-w-full">
+        <h2 className="text-2xl font-bold mb-6 text-gray-900">Admin Login</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">

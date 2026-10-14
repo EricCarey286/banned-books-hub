@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 interface NavigationProps {
   isAuthenticated: boolean;
@@ -7,6 +8,12 @@ interface NavigationProps {
   onLogout: () => void;
 }
 
+const ghostButton =
+  'px-3 py-1.5 text-sm font-medium text-white/80 hover:text-white rounded-full border border-white/20 hover:border-white/50 hover:bg-white/10 transition-colors';
+
+const primaryButton =
+  'px-3 py-1.5 text-sm font-medium text-[#002251] bg-white rounded-full hover:bg-white/90 transition-colors';
+
 export const Navigation: React.FC<NavigationProps> = ({
   isAuthenticated,
   username,
@@ -14,22 +21,21 @@ export const Navigation: React.FC<NavigationProps> = ({
   onLogout,
 }) => {
   return (
-    <nav className="flex justify-end items-center gap-4 p-4 border-b">
+    <nav className="flex justify-end items-center gap-3 px-4 py-3 border-b border-white/10">
       {isAuthenticated && username && (
-        <span className="text-sm text-gray-600">Welcome, {username}</span>
+        <span className="text-sm text-white/60 mr-auto">{username}</span>
       )}
       {isAuthenticated ? (
-        <button
-          onClick={onLogout}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors text-sm"
-        >
-          Logout
-        </button>
+        <>
+          <Link to="/admin" className={primaryButton}>
+            Dashboard
+          </Link>
+          <button onClick={onLogout} className={ghostButton}>
+            Logout
+          </button>
+        </>
       ) : (
-        <button
-          onClick={onAdminClick}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm"
-        >
+        <button onClick={onAdminClick} className={primaryButton}>
           Admin
         </button>
       )}

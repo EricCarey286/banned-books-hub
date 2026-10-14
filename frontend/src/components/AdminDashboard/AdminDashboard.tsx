@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import AddBookForm from '../AddBookForm/AddBookForm';
 import AddImageForm from '../AddImageForm/AddImageForm';
 import AdminBooksList from "../AdminBookList/AdminBookList";
@@ -12,22 +13,23 @@ interface AdminDashboardProps {
  * Renders the admin dashboard with sections for suggested books, contact form submissions, book library, and an add book form.
  */
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ handleLogout, apiUrl, username, authFetch }) => {
+    const navigate = useNavigate();
 
     return (
         <div className="admin-dashboard w-full p-4">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-wrap justify-between items-center gap-3 mb-6 pb-4 border-b border-white/10">
                 <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-                <div className="flex items-center gap-4 m-auto">
-                    {username && <span>Welcome, {username}</span>}
+                <div className="flex items-center gap-3">
+                    {username && <span className="text-sm text-white/60 mr-2">{username}</span>}
                     <button
-                        onClick={() => window.location.href = '/'}
-                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                        onClick={() => navigate('/')}
+                        className="px-3 py-1.5 text-sm font-medium text-white/80 hover:text-white rounded-full border border-white/20 hover:border-white/50 hover:bg-white/10 transition-colors"
                     >
                         Back to Main App
                     </button>
                     <button
                         onClick={handleLogout}
-                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                        className="px-3 py-1.5 text-sm font-medium text-[#002251] bg-white rounded-full hover:bg-white/90 transition-colors"
                     >
                         Logout
                     </button>

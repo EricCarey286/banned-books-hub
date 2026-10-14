@@ -92,8 +92,7 @@ frontend/
 │   │   │   │   └── BookCard.tsx        # Modify: lazy load images
 │   │   │   └── Image/
 │   │   │       └── OptimizedImage.tsx  # NEW: lazy loading wrapper
-│   │   └── Navigation/
-│   │       └── Navigation.tsx          # Modify: add Admin link
+│   │   └── Navigation.tsx              # Modify: add Admin link
 │   ├── hooks/
 │   │   └── useScrollToTop.ts           # NEW: custom hook for scroll reset
 │   ├── types/
@@ -145,7 +144,7 @@ No research.md needed. All technical decisions are straightforward:
 
 **3. Navigation Between Contexts**
 - Add "Back to Main" button in AdminDashboard header
-- Clicking returns to /admin route and shows "Not authenticated" state
+- Clicking navigates to the home route (`/`), keeping the admin session active (per spec FR-004)
 - Alternative: show a dropdown in navigation showing login status and quick logout
 
 **4. Image Optimization Strategy**
@@ -193,7 +192,7 @@ No external API contracts needed. All changes are internal component refactoring
    Props:
    - isOpen: boolean
    - onClose: () => void
-   - onLoginSuccess: (token: string, role: string) => void
+   - onLoginSuccess: (token: string) => void  # role is decoded from the JWT by the caller
    
    Behavior:
    - Shows modal form with username/password fields

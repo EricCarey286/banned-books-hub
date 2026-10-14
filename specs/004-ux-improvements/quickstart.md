@@ -37,8 +37,8 @@ This guide validates that all UX improvements work end-to-end.
 1. On the home page, click "Admin" in the navigation menu
 2. **VERIFY**: Admin login modal appears smoothly (no page reload)
 3. Enter admin credentials:
-   - Username: `ecarey` (or configured ADMIN_USERNAME)
-   - Password: `B00k$aDm!n69` (or configured ADMIN_PASSWORD)
+   - Username: the value of `ADMIN_USERNAME` (see `backend/.env`)
+   - Password: the value of `ADMIN_PASSWORD` (see `backend/.env`)
 4. Click "Login"
 5. **VERIFY**: Modal closes and you're viewing the admin dashboard
 6. Verify navigation menu now shows "Admin Dashboard" or logout option

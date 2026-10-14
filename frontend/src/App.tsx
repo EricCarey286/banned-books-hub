@@ -144,7 +144,7 @@ function AppContent() {
     localStorage.removeItem("authToken");
     setIsAuthenticated(false);
     setUsername("");
-    navigate("/login");
+    navigate("/");
   };
 
   /**
