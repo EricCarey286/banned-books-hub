@@ -7,13 +7,14 @@ import SuggestBookForm from './components/SuggestBookForm/SuggestBookForm';
 import ContactForm from './components/ContactForm/ContactForm';
 import AdminLogin from './components/AdminLogin/AdminLogin';
 import AdminDashboard from './components/AdminDashboard/AdminDashboard';
+import { AdminLoginModal } from './components/AdminLogin/AdminLoginModal';
+import { Navigation } from './components/Navigation';
+import { useScrollToTop } from './hooks/useScrollToTop';
+import { API_URL, URL_PREFIX } from './utils/api';
 
 import ReactGA from 'react-ga4';
 const TRACKING_ID = "G-SFFY2DBJ1B";
 ReactGA.initialize(TRACKING_ID);
-
-const API_URL = import.meta.env.VITE_API_URL; //backend URL
-const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
 
 // Create a component wrapper that has access to routing hooks
 /**
@@ -30,7 +31,9 @@ function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [error, setError] = useState("");
   const [username, setUsername] = useState<string>("");
+  const [isAdminLoginModalOpen, setIsAdminLoginModalOpen] = useState(false);
   const navigate = useNavigate();
+  useScrollToTop();
 
   // Helper function to get the auth token
   /**
@@ -139,7 +142,17 @@ function AppContent() {
     localStorage.removeItem("authToken");
     setIsAuthenticated(false);
     setUsername("");
-    navigate("/login");
+    navigate("/");
+  };
+
+  /**
+   * Handles admin login from modal
+   */
+  const handleAdminLoginSuccess = (token: string) => {
+    localStorage.setItem("authToken", token);
+    setIsAuthenticated(true);
+    setIsAdminLoginModalOpen(false);
+    navigate("/admin");
   };
 
   // Function to make authenticated requests
@@ -157,21 +170,34 @@ function AppContent() {
   };
 
   return (
-    <Routes>
-      {/* Public Routes */}
-      <Route
-        path="/"
-        element={
-          <>
-            <h1>Banned Books Hub</h1>
-            <p>This is a one-stop hub for finding, supporting, and reporting books that have been banned or censored.</p>
-            <FeaturedBook apiUrl={API_URL} />
-            <BookList apiUrl={API_URL} />
-            <SuggestBookForm apiUrl={API_URL} />
-            <ContactForm apiUrl={API_URL} authFetch={authFetch}/>
-          </>
-        }
+    <>
+      <AdminLoginModal
+        isOpen={isAdminLoginModalOpen}
+        onClose={() => setIsAdminLoginModalOpen(false)}
+        onLoginSuccess={handleAdminLoginSuccess}
+        apiUrl={API_URL}
       />
+      <Routes>
+        {/* Public Routes */}
+        <Route
+          path="/"
+          element={
+            <>
+              <Navigation
+                isAuthenticated={isAuthenticated}
+                username={username}
+                onAdminClick={() => setIsAdminLoginModalOpen(true)}
+                onLogout={handleLogout}
+              />
+              <h1>Banned Books Hub</h1>
+              <p>This is a one-stop hub for finding, supporting, and reporting books that have been banned or censored.</p>
+              <FeaturedBook apiUrl={API_URL} />
+              <BookList apiUrl={API_URL} />
+              <SuggestBookForm apiUrl={API_URL} />
+              <ContactForm apiUrl={API_URL} authFetch={authFetch}/>
+            </>
+          }
+        />
 
       {/* Admin Login Route */}
       <Route 
@@ -186,21 +212,22 @@ function AppContent() {
         } 
       />
 
-      {/* Protected Admin Route */}
-      <Route
-        path="/admin"
-        element={
-          isAuthenticated ? 
-            <AdminDashboard 
-              apiUrl={API_URL} 
-              handleLogout={handleLogout} 
-              username={username}
-              authFetch={authFetch}
-            /> : 
-            <Navigate to="/login" />
-        }
-      />
-    </Routes>
+        {/* Protected Admin Route */}
+        <Route
+          path="/admin"
+          element={
+            isAuthenticated ?
+              <AdminDashboard
+                apiUrl={API_URL}
+                handleLogout={handleLogout}
+                username={username}
+                authFetch={authFetch}
+              /> :
+              <Navigate to="/login" />
+          }
+        />
+      </Routes>
+    </>
   );
 }
 

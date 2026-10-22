@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon --exec ts-node ./src/app.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
+    "build": "tsc && mkdir -p dist/utils && cp src/utils/migrations-schema.sql dist/utils/",
     "start": "node dist/app.js"
   },
   "author": "Eric Carey",

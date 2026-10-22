@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
 import Card from "./Card";
 import defaultImg from "../../../assets/book-thumbnail-default.png"
-
-const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
+import { OptimizedImage } from "../Image/OptimizedImage";
+import { URL_PREFIX } from "../../../utils/api";
 
 interface Book {
     id: number;
@@ -44,14 +44,10 @@ const FeaturedCard = <T extends Book>({ data, renderFields, apiUrl }: FeaturedCa
             leftSection={
                 <>
                     {data.cover_url ? (
-                        <img
-                            className="mx-auto mb-4 w-30 h-30 object-contain"
+                        <OptimizedImage
                             src={`${URL_PREFIX}://${apiUrl}/book-image/${data.cover_url}`}
                             alt={bookImgAlt}
-                            onError={(e) => {
-                                // set default img if no img returned 
-                                (e.currentTarget as HTMLImageElement).src = defaultImg;
-                            }}
+                            className="mx-auto mb-4 w-30 h-30 object-contain"
                         />
                     ) : (
                         <img

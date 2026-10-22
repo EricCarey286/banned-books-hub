@@ -11,6 +11,8 @@ const router = express.Router();
 
 // Cache TTLs
 const BOOK_LIST_TTL = 5 * 60; // 5 minutes
+// Cap stale serving for the list so hasNextPage can't lag far behind data changes (FR-010)
+const BOOK_LIST_STALE_TTL = BOOK_LIST_TTL;
 const BOOK_DETAIL_TTL = 60 * 60; // 1 hour
 const FEATURED_BOOK_TTL = 15 * 60; // 15 minutes
 const SEARCH_TTL = 10 * 60; // 10 minutes
@@ -90,7 +92,7 @@ router.get('/', async function(req: Request, res: Response, next: NextFunction):
     const { data: payload, status } = await getOrSetCacheSWR({
       key: cacheKey,
       ttlSeconds: BOOK_LIST_TTL,
-      staleTtlSeconds: BOOK_LIST_TTL * 6,
+      staleTtlSeconds: BOOK_LIST_STALE_TTL,
       fetcher: async () => {
         let result = await books.getMultiple(page);
         result = await addImageUrlsToBooks(result);
@@ -103,7 +105,7 @@ router.get('/', async function(req: Request, res: Response, next: NextFunction):
       res,
       etagSource: payload,
       ttlSeconds: BOOK_LIST_TTL,
-      staleTtlSeconds: BOOK_LIST_TTL * 6,
+      staleTtlSeconds: BOOK_LIST_STALE_TTL,
       cacheStatus: status,
     })) {
       return;

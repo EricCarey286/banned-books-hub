@@ -4,6 +4,7 @@ import Modal from "../Button/Modal";
 import defaultImg from "../../../assets/book-thumbnail-default.png";
 import { Book } from "../../../types/book";
 import { buildUrl } from "../../../utils/api";
+import { OptimizedImage } from "../Image/OptimizedImage";
 
 type BookCardProps<T extends Book> = {
     data: T;
@@ -30,14 +31,10 @@ const BookCard = <T extends Book>({ data, renderFields, apiUrl }: BookCardProps<
         header={
           <>
             {data.cover_url ? (
-              <img
-                loading="lazy"
-                className="mx-auto mb-4 w-30 h-30 object-contain"
+              <OptimizedImage
                 src={coverSrc}
                 alt={bookImgAlt}
-                onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = defaultImg;
-                }}
+                className="mx-auto mb-4 w-30 h-30 object-contain"
               />
             ) : (
               <img
@@ -64,10 +61,10 @@ const BookCard = <T extends Book>({ data, renderFields, apiUrl }: BookCardProps<
 
       <Modal isOpen={isModalOpen} onClose={closeModal} title={data.title}>
         {data.cover_url ? (
-          <img
-            className="mx-auto mb-4 w-30 h-30 object-contain"
+          <OptimizedImage
             src={coverSrc}
             alt={bookImgAlt}
+            className="mx-auto mb-4 w-30 h-30 object-contain"
           />
         ) : (
           <img
