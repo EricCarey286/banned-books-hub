@@ -183,7 +183,7 @@ async function initializeMigrations() {
     const validationResults = await validateAllMigrations(
       migrations,
       connection,
-      process.env.NODE_ENV === 'production' ? 'production' : 'development'
+      process.env.RAILWAY_ENVIRONMENT_NAME === 'production' ? 'production' : 'development'
     );
 
     if (hasValidationErrors(validationResults)) {
@@ -201,7 +201,7 @@ async function initializeMigrations() {
     const executionResults = await executeMigrations(
       migrations,
       connection,
-      process.env.NODE_ENV === 'production' ? 'production' : 'development',
+      process.env.RAILWAY_ENVIRONMENT_NAME === 'production' ? 'production' : 'development',
       'app-startup',
       parseInt(process.env.MIGRATION_TIMEOUT || '300000')
     );
