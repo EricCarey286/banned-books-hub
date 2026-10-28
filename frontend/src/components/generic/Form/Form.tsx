@@ -12,6 +12,8 @@ interface FormProps {
   initialValues: Record<string, string>;
   validate?: (values: Record<string, string>) => string[];
   onSubmit: (values: Record<string, string>, file?: File | null) => Promise<void>;
+  footer?: React.ReactNode;
+  submitDisabled?: boolean;
 }
 
 /**
@@ -28,7 +30,7 @@ interface FormProps {
  * @param onSubmit - An asynchronous function to handle form submission with the form data.
  * @returns A React component rendering the form interface.
  */
-const Form: React.FC<FormProps> = ({ title, fields, initialValues, validate, onSubmit }) => {
+const Form: React.FC<FormProps> = ({ title, fields, initialValues, validate, onSubmit, footer, submitDisabled = false }) => {
   const [formData, setFormData] = useState(initialValues);
   const [file, setFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
@@ -146,7 +148,8 @@ const Form: React.FC<FormProps> = ({ title, fields, initialValues, validate, onS
               )}
             </div>
           ))}
-        <button type="submit" className="w-full py-2 px-4 rounded-md transition">
+        {footer}
+        <button type="submit" disabled={submitDisabled} className="w-full py-2 px-4 rounded-md transition disabled:opacity-50">
           Submit
         </button>
       </form>
