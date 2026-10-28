@@ -2,6 +2,8 @@ import { Router, Request, Response, NextFunction } from 'express';
 import * as suggestedBooks from '../services/suggestedBooks';
 import { AppError } from '../utils/helper';
 import { authenticate } from '../middleware/auth';
+import { requireHumanVerification } from '../middleware/turnstile';
+import { submissionLimiter } from '../middleware/submissionLimiter';
 
 const router = Router();
 
@@ -14,14 +16,20 @@ router.get('/', authenticate, async function(req: Request, res: Response, next: 
   }
 });
 
-//suggest a book entry (public — no authenticate)
-router.post('/', async function(req: Request, res: Response, next: NextFunction) {
+//suggest a book entry (public — no authenticate; requires human verification and is rate limited)
+router.post('/', requireHumanVerification, submissionLimiter('suggested_books'), async function(req: Request, res: Response, next: NextFunction) {
   const booksArray = req.body;
   const results: any[] = [];
 
   try {
-    if(booksArray.length < 1){
+    if (!Array.isArray(booksArray)) {
+      throw new AppError('Invalid create: request body must be an array with one book', 400);
+    }
+    if (booksArray.length === 0) {
       throw new AppError('Invalid create: request must contain 1 or more books', 400);
+    }
+    if (booksArray.length > 1) {
+      throw new AppError('Invalid create: request must contain exactly one book', 400);
     }
 
     for (const book of booksArray) {
