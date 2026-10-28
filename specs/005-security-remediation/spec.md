@@ -200,7 +200,7 @@ Packages and environment settings the service does not use are removed. Every se
 **Session credential (Story 4)**
 
 - **FR-012**: On successful login, the session credential MUST be delivered as a cookie that page scripts cannot read.
-- **FR-013**: The session cookie MUST be marked so that it is sent only over secure connections, and MUST be permitted on cross-site requests from the frontend domain, because the frontend and API run on separate domains (Clarification 1, option A).
+- **FR-013**: The session cookie MUST be marked so that it is sent only over secure connections and only for same-site requests. The frontend and API MUST be served from subdomains of one domain (Clarification 1, option B).
 - **FR-014**: The service MUST provide a logout action that clears the session cookie.
 - **FR-015**: State-changing requests that rely on the session cookie MUST be protected against cross-site request forgery.
 - **FR-016**: The admin screen MUST NOT store the session credential in browser storage.
@@ -275,7 +275,7 @@ Packages and environment settings the service does not use are removed. Every se
 
 ### Session 2026-10-28
 
-- Q1 (resolved 2026-10-28): The admin session uses a cross-site cookie with a CSRF token (option A). See Clarification 1 below.
+- Q1 (resolved 2026-10-28, revised the same day): The frontend and API are served from subdomains of one domain, and the admin cookie is same-site (option B). Option A was chosen first but fails in Safari, which blocks third-party cookies. See Clarification 1 below.
 
 ## Assumptions
 
@@ -287,6 +287,7 @@ Packages and environment settings the service does not use are removed. Every se
 - **Verification provider**: A third-party human-verification service is used. The choice of provider is an implementation decision made during planning, not in this spec.
 - **Existing sessions**: Tokens issued before release are invalidated by the new signing secret or by removal from browser storage. Admins log in once after release.
 - **Image formats**: Only JPEG, PNG, WebP, and GIF are allowed. Other formats are out of scope.
+- **Domain**: One registrable domain is owned by the project, with the frontend on one subdomain and the API on another (for example `app.` and `api.`). The domain name is required before deploy.
 - **Deployment verification**: Storage host and bucket checks (FR-035) require access to the Railway environments. They are a release gate, performed by the operator, not by the implementation.
 - **Documentation**: The developer walkthrough is currently a working file outside the repository. It is updated in place as part of this feature, and the planning phase decides whether it moves into `docs/`.
 
@@ -305,7 +306,7 @@ Packages and environment settings the service does not use are removed. Every se
 | C | Keep the token in browser storage | No migration work, but page scripts keep access to the admin session, so this option does not address the XSS gap. Not recommended. |
 | Custom | Provide your own answer | Describe the arrangement; it will be recorded in this section and reflected in FR-012 to FR-016. |
 
-**Your choice**: A, cross-site cookie with CSRF token (answered 2026-10-28). FR-012 to FR-015 apply as written, with FR-013 covering the cross-site setting. No infrastructure change is needed for the frontend/API split.
+**Your choice**: B, same-site subdomains of one domain (answered 2026-10-28). FR-012 to FR-015 apply, with FR-013 requiring a same-site cookie. This needs a custom domain and Railway custom-domain configuration for the frontend and API. The CSRF token from FR-015 stays in place as defense in depth.
 
 ## Notes on Verification
 

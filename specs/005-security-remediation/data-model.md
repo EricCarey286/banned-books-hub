@@ -25,7 +25,8 @@ A signed JWT carried in the `admin_session` cookie. Never returned in a response
 | Name | `admin_session` | |
 | `HttpOnly` | true | Page scripts cannot read it (FR-012). |
 | `Secure` | true | Sent only over HTTPS (FR-013). |
-| `SameSite` | `None` (option A) | Cross-site requests from the frontend domain (FR-013). Revisit if option B is chosen; see research.md §1. |
+| `SameSite` | `Strict` | Frontend and API are same-site subdomains (option B, FR-013); see research.md §1. |
+| `Domain` | not set (host-only) | Cookie stays on the API subdomain only. |
 | `Path` | `/` | |
 | `Max-Age` | 86400 | Matches JWT lifetime. |
 

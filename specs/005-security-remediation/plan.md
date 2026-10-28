@@ -6,11 +6,11 @@
 
 ## Summary
 
-Close ten gaps from the application review, in priority order: refuse to start without a strong signing secret; store the admin password as a bcrypt hash; limit failed logins per address; move the admin session into a cookie that page scripts cannot read, with CSRF protection (Clarification 1, option A); add human verification and a per-address hourly limit to the two public POST endpoints; restrict the contact endpoint to one entry per request; check uploads by file signature; hide internal error detail in production; consolidate MinIO into one client with required settings; remove unused session code and dependencies. Documentation (README, `CLAUDE.md`, walkthrough, env reference) is updated in the same change.
+Close ten gaps from the application review, in priority order: refuse to start without a strong signing secret; store the admin password as a bcrypt hash; limit failed logins per address; move the admin session into a cookie that page scripts cannot read, with CSRF protection and a same-site cookie (Clarification 1, option B); add human verification and a per-address hourly limit to the two public POST endpoints; restrict the contact endpoint to one entry per request; check uploads by file signature; hide internal error detail in production; consolidate MinIO into one client with required settings; remove unused session code and dependencies. Documentation (README, `CLAUDE.md`, walkthrough, env reference) is updated in the same change.
 
 No database schema changes are needed, so no migration is added.
 
-**Blocking risk**: option A (cross-site cookie) does not work in Safari, which blocks third-party cookies. See Risks below. Implementation of the cookie work (User Story 4) should not start until this is confirmed. The other stories do not depend on this choice.
+**Cookie arrangement**: the frontend and API are served from subdomains of one domain (Clarification 1, option B). The admin cookie is then same-site and works in all major browsers, including Safari. This needs a custom domain and Railway configuration; see Risks.
 
 ## Technical Context
 
@@ -125,7 +125,8 @@ README.md                             # updated setup and env section
 ## Design Decisions (summary; detail in research.md)
 
 - **Startup gate**: `utils/env.ts` is the first project import in `app.ts`. It validates required settings and exits with the names of any missing or invalid ones. Everything else reads secrets from that module.
-- **Admin session**: `POST /api/admin/login` sets an `admin_session` cookie (HTTP-only, Secure, SameSite=None, 24 h) containing a signed JWT with a random `jti`. The JWT is never returned in the body.
+- **Admin session**: `POST /api/admin/login` sets an `admin_session` cookie (HTTP-only, Secure, SameSite=Strict, 24 h) containing a signed JWT with a random `jti`. The JWT is never returned in the body. The cookie is host-only on the API subdomain; the frontend subdomain is same-site with it, so the browser sends it on API calls with `credentials: "include"`.
+- **Domains**: `FRONTEND_URL` is the frontend subdomain (for example `app.<domain>`); `VITE_API_URL` is the API subdomain (for example `api.<domain>`). Both use `https`. CORS continues to allow only `FRONTEND_URL`.
 - **CSRF**: The login and validate responses return a `csrfToken` = HMAC(JWT_SECRET, jti). The frontend keeps it in `App.tsx` state and sends it as `X-CSRF-Token` on POST, PUT, and DELETE. The server recomputes it from the cookie's `jti`.
 - **Login limit**: Check the failure counter before comparing passwords, so a blocked address is refused even with the correct password. Increment on failure; delete on success.
 - **Password check**: Constant-time username comparison on digests; bcrypt compare always runs (against a dummy hash when the username is wrong), so response timing does not reveal valid usernames.
@@ -137,15 +138,12 @@ README.md                             # updated setup and env section
 
 ## Risks and Blocking Decisions
 
-1. **Safari blocks the admin cookie (blocking, must be decided before cookie work)**. The frontend and API are on separate `*.up.railway.app` domains, which are different sites. Safari's tracking protection blocks third-party cookies outright, including `SameSite=None; Secure` cookies. Result: admin login would appear to succeed but no session would be stored, so admin pages would not work in Safari (including iOS). Other browsers may partition or restrict these cookies depending on settings. Options:
-   - **A (chosen in Clarification 1)**: Keep as chosen. Accept that admin login fails in Safari unless the user's browser allows third-party cookies.
-   - **B**: Serve the frontend and API under one site (for example, two subdomains of a custom domain, `app.` and `api.`). Cookies become same-site, so Safari accepts them. Requires a custom domain and Railway custom-domain setup, but no code change to the cookie design beyond SameSite=Lax.
-   - **C**: Keep the token in browser storage (rejected in the spec).
-   The spec's Clarification 1 must be reopened if B is chosen. This plan should not proceed to implementation of User Story 4 until the user confirms A or B.
-2. **Deployed MinIO settings unverified (release gate, FR-035)**. Production may not set `MINIO_BUCKET_NAME`, in which case presigned URLs point at `books` while uploads go to `book-images`. Verify in Railway dev and prod before release.
-3. **Existing `JWT_SECRET` in Railway may be shorter than 32 characters**. The backend will then refuse to start after deploy. Check the value length before merging.
-4. **Ordering**: Railway must have `ADMIN_PASSWORD_HASH`, `TURNSTILE_SECRET_KEY`, and `MINIO_BUCKET_NAME` set before the new backend deploys, or the service stops at startup.
-5. **Local development over HTTP**: `Secure` cookies on `http://localhost` depend on the browser; Chrome and Firefox accept them on localhost. Safari behavior is covered by Risk 1.
+1. **Custom domain and Railway configuration (blocking for deploy, not for code)**. Option B needs a registrable domain owned by the project, with two Railway custom domains: one for the frontend (`app.<domain>`) and one for the backend (`api.<domain>`). The code can be written and tested locally first, but the admin cookie only works end to end once both hosts share the domain. The domain name is needed before deploy.
+2. **Cookie behavior in local development**: `localhost:5173` (frontend) and `localhost:3001` (API) are same-site, so `SameSite=Strict` works. `Secure` cookies on plain `http://localhost` depend on the browser; Chrome and Firefox accept them, and Safari's behavior should be checked during quickstart §4.
+3. **Original option A withdrawn**: A relied on cross-site cookies, which Safari blocks (including iOS). Recorded in research.md §1.
+4. **Deployed MinIO settings unverified (release gate, FR-035)**. Production may not set `MINIO_BUCKET_NAME`, in which case presigned URLs point at `books` while uploads go to `book-images`. Verify in Railway dev and prod before release.
+5. **Existing `JWT_SECRET` in Railway may be shorter than 32 characters**. The backend will then refuse to start after deploy. Check the value length before merging.
+6. **Ordering**: Railway must have `ADMIN_PASSWORD_HASH`, `TURNSTILE_SECRET_KEY`, and `MINIO_BUCKET_NAME` set before the new backend deploys, or the service stops at startup.
 
 ## Complexity Tracking
 

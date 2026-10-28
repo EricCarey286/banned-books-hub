@@ -6,20 +6,23 @@ No `NEEDS CLARIFICATION` markers remain in the technical context. The decisions 
 
 ---
 
-## 1. Session cookie across separate domains (blocking)
+## 1. Session cookie arrangement (decided: option B)
 
-**Decision**: Use the cross-site cookie with CSRF token (Clarification 1, option A) as the working design, but **do not start the cookie work until the user confirms it**, because Safari blocks it.
+**Decision**: Serve the frontend and API from subdomains of one custom domain (for example `app.<domain>` and `api.<domain>`). The admin cookie is `SameSite=Strict; Secure; HttpOnly`, host-only on the API subdomain. The CSRF token (§2) stays as defense in depth.
 
-**Rationale**: The user chose A. The frontend and API are on separate `*.up.railway.app` hosts. Those are different sites, so a cookie must be `SameSite=None; Secure` to be sent cross-site.
+**Rationale**: Subdomains of one registrable domain are the same site, so browsers send the cookie on API calls from the frontend without third-party cookie handling. This works in Safari, Chrome, Firefox, and Edge, including iOS. `Strict` is safe here because every legitimate admin request originates from the same site.
+
+**Why option A was withdrawn**: The first choice (cross-site cookie, `SameSite=None; Secure`) needed the frontend and API on different sites, which `*.up.railway.app` hosts are. Safari blocks all third-party cookies, so admin login would appear to succeed in Safari but the session would not be stored.
 
 **Risk found during planning**: Safari's tracking protection blocks all third-party cookies, including `SameSite=None` ones. Admin login would succeed but the session would not persist in Safari, including on iOS. Firefox and Chrome partition or restrict third-party cookies depending on settings, so behavior there is not guaranteed either.
 
 **Alternatives considered**:
-- **B: same-site subdomains of one custom domain** (for example `app.example.com` and `api.example.com`). Cookies become first-party-like in every browser; `SameSite=Lax` works. Requires a custom domain and Railway custom-domain configuration. Recommended if Safari support matters.
+- **B (chosen): same-site subdomains of one custom domain.** Requires a custom domain and Railway custom-domain configuration.
+- **B' (proxy API calls through the frontend's own domain)**: also same-site, but adds a proxy hop and a routing layer in the frontend host. Not chosen.
 - **B': proxy API calls through the frontend's own domain.** Same-site, but needs a proxy route in the frontend host, adding a hop.
 - **C: keep the JWT in browser storage.** Rejected by the spec; does not address the XSS gap.
 
-**Action**: Ask the user to confirm A (accept Safari limitation) or switch to B. The rest of the plan is independent of this choice; only the cookie attributes and CSRF handling differ.
+**Action**: Confirm the domain name before deploy. Infrastructure to set up: Railway custom domains for the frontend and backend; `FRONTEND_URL`, `VITE_API_URL`, `URL_PREFIX`, and `VITE_URL_PREFIX` set to the new hosts in each environment; the Cloudflare Turnstile widget configured for the frontend hostname.
 
 ---
 
@@ -33,7 +36,7 @@ No `NEEDS CLARIFICATION` markers remain in the technical context. The decisions 
 - Works after page reload: the validate call returns a fresh token while the cookie is still valid.
 
 **Alternatives considered**:
-- **SameSite alone**: insufficient for cross-site cookies; `SameSite=None` sends the cookie on every cross-site request.
+- **SameSite alone**: not enough as the only defense. `SameSite` limits cookies on cross-site requests, but the CSRF token also covers older browsers and any future change that loosens the cookie setting.
 - **Server-side session table**: adds a database or Redis session store and migration burden for one admin.
 
 ---

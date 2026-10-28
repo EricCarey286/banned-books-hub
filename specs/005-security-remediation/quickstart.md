@@ -37,7 +37,7 @@ Redis must be reachable (`REDIS_URL`) for the login and submission limits.
 # correct password
 curl -s -i -X POST "$API/api/admin/login" -H 'Content-Type: application/json' \
   -d '{"username":"<ADMIN_USERNAME>","password":"<correct>"}'
-# expect 200, Set-Cookie: admin_session=...; HttpOnly; Secure; SameSite=None, no "token" in body
+# expect 200, Set-Cookie: admin_session=...; HttpOnly; Secure; SameSite=Strict, no "token" in body
 
 curl -s -X POST "$API/api/admin/login" -H 'Content-Type: application/json' \
   -d '{"username":"<ADMIN_USERNAME>","password":"wrong"}'
@@ -76,7 +76,7 @@ curl -s -i -X POST "$API/api/admin/login" -H 'Content-Type: application/json' \
 
 ## 4. Session not readable by page scripts (User Story 4)
 
-**Do not run this scenario until the Safari decision in `plan.md` Risk 1 is confirmed.**
+**Requires the custom domain (`plan.md` Risk 1).** Run it on `app.<domain>` against `api.<domain>`, not on the Railway `*.up.railway.app` hosts, because those are different sites and the cookie will not be sent.
 
 | Step | Action | Expected |
 |---|---|---|
@@ -198,4 +198,4 @@ With `NODE_ENV=development` locally, detail may appear in 4xx/5xx bodies.
 
 ## 10. Browser compatibility check
 
-Repeat 4.1 to 4.5 in Safari (desktop and iOS). Expected to **fail** under option A; this is the known risk. Record the result in the release notes.
+Repeat 4.1 to 4.5 in Safari (desktop and iOS) and Firefox on the custom domains. Expected to **pass** under option B. Record the results in the release notes.

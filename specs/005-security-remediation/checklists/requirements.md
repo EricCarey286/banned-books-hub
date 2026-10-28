@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [x] No [NEEDS CLARIFICATION] markers remain — Clarification 1 resolved 2026-10-28: option A (cross-site cookie with CSRF token)
+- [x] No [NEEDS CLARIFICATION] markers remain — Clarification 1 resolved 2026-10-28, revised to option B (same-site subdomains) after planning found option A fails in Safari
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
