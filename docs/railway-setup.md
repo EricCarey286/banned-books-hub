@@ -92,17 +92,20 @@ Railway projects start with a default environment. Rename or create the developm
    | `DB_NAME` | From MariaDB service variables (`MYSQLDATABASE`) |
    | `DB_USER` | From MariaDB service variables (`MYSQLUSER`) |
    | `DB_PASSWORD` | From MariaDB service variables (`MYSQLPASSWORD`) |
-   | `FRONTEND_URL` | Railway domain of the frontend-dev service (no `https://`) |
+   | `FRONTEND_URL` | Dev frontend custom domain, literal value (for example `dev.bannedbookshub.com`, no `https://`). Do not use a Railway reference. |
    | `URL_PREFIX` | `https` |
    | `RAILWAY_PUBLIC_DOMAIN` | Railway domain of the backend-dev service (no `https://`) |
    | `ADMIN_USERNAME` | dev admin username (your choice) |
-   | `ADMIN_PASSWORD` | strong unique password |
+   | `ADMIN_PASSWORD_HASH` | bcrypt hash from `npm run hash-password` (never the plain password) |
    | `JWT_SECRET` | random 32+ char string (unique to development) |
-   | `SESSION_SECRET` | random string |
+   | `TURNSTILE_SECRET_KEY` | secret key of the dev Turnstile widget (see [Custom Domains and Turnstile](#custom-domains-and-turnstile)) |
    | `MINIO_URL` | `https://bucket-development-d7ab.up.railway.app` |
+   | `MINIO_BUCKET_NAME` | the bucket that holds the cover images (required) |
    | `MINIO_ACCESS_KEY` | development MinIO access key |
    | `MINIO_SECRET_KEY` | development MinIO secret key |
    | `REDIS_URL` | From Redis service variables |
+
+   > **Do not set** `ADMIN_PASSWORD`, `SESSION_SECRET`, `MINIO_ENDPOINT`, `MINIO_PORT`, or `MINIO_USE_SSL`. They are no longer read. Delete them if they exist.
 
    > **Tip**: Railway service domains appear in each service's **Settings** tab under "Public Networking." Enable a public domain for both backend-dev and frontend-dev if not already enabled.
 
@@ -113,10 +116,11 @@ Railway projects start with a default environment. Rename or create the developm
 
    | Variable | Value |
    |---|---|
-   | `VITE_API_URL` | Railway domain of the backend-dev service (no `https://`) |
+   | `VITE_API_URL` | Dev API custom domain, literal value (for example `api-dev.bannedbookshub.com`, no `https://`) |
    | `VITE_URL_PREFIX` | `https` |
+   | `VITE_TURNSTILE_SITE_KEY` | site key of the dev Turnstile widget (public) |
 
-3. Redeploy the frontend service after setting these variables (Railway does not auto-redeploy on variable changes — click **Redeploy** in the service's Deployments tab)
+3. Redeploy the frontend service after setting these variables. `VITE_` values are built into the app, so Railway does not pick up changes without a redeploy. Click **Redeploy** in the service's Deployments tab.
 
 ### Step 9 — Seed the development database
 
@@ -153,10 +157,11 @@ The production environment mirrors development but tracks `main` and uses isolat
 | `DB_NAME` | `banned_books_dev` | `banned_books` |
 | `DB_USER` | Dev DB user | Prod DB user |
 | `DB_PASSWORD` | Dev DB password | Prod DB password |
-| `FRONTEND_URL` | Dev frontend domain | Prod frontend domain |
+| `FRONTEND_URL` | `dev.bannedbookshub.com` | `www.bannedbookshub.com` |
 | `RAILWAY_PUBLIC_DOMAIN` | Dev backend domain | Prod backend domain |
-| `ADMIN_PASSWORD` | Dev admin password | **Different** prod admin password |
-| `JWT_SECRET` | Dev secret | **Different** prod secret (must be unique) |
+| `ADMIN_PASSWORD_HASH` | Dev hash | **Different** prod hash (generated from a different password) |
+| `TURNSTILE_SECRET_KEY` | Dev widget secret | Prod widget secret |
+| `JWT_SECRET` | Dev secret | **Different** prod secret (must be unique, 32+ characters) |
 | `MINIO_URL` | `https://bucket-development-d7ab.up.railway.app` | `https://bucket-production-70f9.up.railway.app` |
 | `MINIO_ACCESS_KEY` | Dev bucket key | Prod bucket key |
 | `MINIO_SECRET_KEY` | Dev bucket key | Prod bucket key |
@@ -179,8 +184,9 @@ Repeat Steps 3–6 from Part 1, substituting:
 Repeat Steps 7–8 from Part 1, using the production values from the table above. Pay special attention to:
 
 - `MINIO_URL` must be `https://bucket-production-70f9.up.railway.app`
-- `JWT_SECRET` must be different from the development secret
-- `ADMIN_PASSWORD` should be different from the development admin password
+- `JWT_SECRET` must be different from the development secret and at least 32 characters
+- `ADMIN_PASSWORD_HASH` should come from a different password than the development admin password
+- `FRONTEND_URL` and `VITE_API_URL` must be the production custom domains, not the dev ones
 - `DB_HOST` should point to the production MariaDB service (different from development)
 
 ### Step 4 — Verify production environment
@@ -192,6 +198,58 @@ Follow the **Tier 3 checklist** in `specs/002-railway-cicd-pipeline/quickstart.m
 - [ ] `GET https://<backend-prod-domain>/health` returns healthy
 - [ ] Image uploads reach `bucket-production-70f9.up.railway.app`
 - [ ] Development environment is unaffected (development URL still works)
+
+---
+
+## Custom Domains and Turnstile
+
+The admin session cookie is same-site only. The frontend and API must therefore be served from subdomains of one domain, for example:
+
+| Environment | Frontend | API |
+|---|---|---|
+| Production | `www.bannedbookshub.com` | `api.bannedbookshub.com` |
+| Development | `dev.bannedbookshub.com` | `api-dev.bannedbookshub.com` |
+
+Railway's `*.up.railway.app` addresses are different sites from each other, so they cannot share the admin cookie. Set up the custom domains before logging in to the admin area.
+
+### 1. Add the custom domain in Railway
+
+1. Open the Railway project, pick the environment, and click the **backend** service.
+2. Go to **Settings → Networking → Custom Domain** and add the API hostname.
+3. Railway shows a target such as `something.up.railway.app`. Copy it.
+4. Repeat for the **frontend** service with the frontend hostname.
+
+### 2. Create the DNS records
+
+Add one CNAME per hostname at the registrar where the domain is managed. For GoDaddy: **My Products → Domains → (domain) → DNS → Add New Record**, Type `CNAME`, Name is the part before the domain (for example `www` or `api-dev`), Value is the Railway target.
+
+- Delete any existing record or forwarding that already uses the same name. Two records with the same name will conflict.
+- Railway may also ask for a `TXT` record to verify ownership. Add it with the name and value Railway shows.
+- Wait until Railway shows each domain as verified with a certificate. DNS changes can take up to an hour.
+
+### 3. Create the Turnstile widget
+
+1. Sign in at `dash.cloudflare.com` (a free account is enough; the domain does not need to move to Cloudflare).
+2. Open **Turnstile** and click **Add widget**.
+3. Under **Hostnames**, add the frontend hostname for each environment (for example `www.bannedbookshub.com` and `dev.bannedbookshub.com`). Use hostnames only, with no `https://`.
+4. Copy the **Site key** into the frontend as `VITE_TURNSTILE_SITE_KEY`, and the **Secret key** into the backend as `TURNSTILE_SECRET_KEY`.
+
+### 4. Point the services at the new hosts
+
+| Service | Variable | Value |
+|---|---|---|
+| backend | `FRONTEND_URL` | the frontend custom domain (literal value) |
+| backend | `URL_PREFIX` | `https` |
+| frontend | `VITE_API_URL` | the API custom domain (literal value) |
+| frontend | `VITE_URL_PREFIX` | `https` |
+
+Redeploy the frontend after changing `VITE_` values.
+
+### 5. Check it
+
+- `https://<api-domain>/health` returns `{"status":"healthy", ...}`.
+- Log in on the frontend. The response sets an `admin_session` cookie on the API domain (visible in the browser's developer tools under Application → Cookies).
+- Open the admin dashboard and confirm it loads data.
 
 ---
 
