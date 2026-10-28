@@ -9,3 +9,4 @@ certs/
 certs/server.cert
 certs/server.key
 .vscode/
+.specify/extensions/.cache/
