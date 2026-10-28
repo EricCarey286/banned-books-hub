@@ -1,7 +1,7 @@
 import 'dotenv/config';
+import './utils/env'; // Refuses to start when required settings are missing (must run before anything reads them)
 import cors from "cors";
 import express from "express";
-import jwt from "jsonwebtoken";
 import compression from "compression";
 const app = express();
 import helmet from "helmet";
@@ -18,15 +18,14 @@ import { validateAllMigrations, hasValidationErrors } from './services/migration
 import { executeMigrations, getSummary } from './services/migration-executor';
 import { getConnection } from './services/db';
 
+import adminRouter from './routes/adminRouter';
 import { PORT } from './utils/config';
 import { AppError } from "./utils/helper";
-import { authenticate, AuthRequest } from './middleware/auth';
+import { IS_DEVELOPMENT, FRONTEND_URL as FRONTEND_HOST, URL_PREFIX } from './utils/env';
 
 import { Request, Response, NextFunction } from 'express';
 
-const FRONTEND_URL = `${process.env.URL_PREFIX}://${process.env.FRONTEND_URL}`;
-const JWT_SECRET = process.env.JWT_SECRET || 'missing-key';
-const JWT_EXPIRES_IN = '24h';
+const FRONTEND_URL = `${URL_PREFIX}://${FRONTEND_HOST}`;
 
 app.use(express.json());
 app.use(
@@ -61,46 +60,8 @@ app.use(limiter);
 app.use(helmet()); //helmet for security middleware
 app.use(cors(corsOptions));
 
-app.post("/api/admin/login", (req: Request, res: Response): void => {
-  const { username, password } = req.body;
-
-  if (
-    username === process.env.ADMIN_USERNAME &&
-    password === process.env.ADMIN_PASSWORD
-  ) {
-    // Generate JWT token
-    const token = jwt.sign(
-      { username, role: 'admin' },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
-    );
-
-    res.json({ 
-      success: true, 
-      message: "Logged in successfully",
-      token
-    });
-    return;
-  }
-
-  res.status(401).json({ message: "Invalid credentials" });
-});
-
-// Protected Admin Route
-app.get("/api/admin", authenticate, (req: AuthRequest, res: Response) => {
-  res.json({ 
-    message: "Welcome to the admin panel", 
-    user: req.user 
-  });
-});
-
-// Token validation endpoint
-app.get("/api/admin/validate", authenticate, (req: AuthRequest, res: Response) => {
-  res.json({ 
-    valid: true, 
-    user: req.user 
-  });
-});
+// Login, logout, and session validation (see routes/adminRouter.ts)
+app.use("/api/admin", adminRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.json({ 
@@ -125,13 +86,23 @@ app.use('/health', healthRouter);
 app.use((err: AppError, req: Request, res: Response, next: NextFunction) => {
   const statusCode = err.statusCode || 500;
 
-  const errorResponse = {
+  // Full detail always goes to the server log (FR-029)
+  console.error(`Request failed: ${req.method} ${req.originalUrl}`, err);
+
+  // Server errors never expose internals outside development (FR-027, FR-028)
+  if (statusCode >= 500) {
+    res.status(statusCode).json({
+      message: IS_DEVELOPMENT ? err.message : 'Internal server error',
+      details: IS_DEVELOPMENT ? err.details || null : null,
+    });
+    return;
+  }
+
+  // Client errors carry only the message and validation field details
+  res.status(statusCode).json({
     message: err.message,
     details: err.details || null,
-  };
-
-  console.error("Error details: ", errorResponse);
-  res.status(statusCode).json(errorResponse);
+  });
   return;
 });
 

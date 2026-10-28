@@ -1,4 +1,5 @@
 import { Client } from "minio";
+import { MINIO_URL, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET_NAME } from "./env";
 
 export const PORT = process.env.PORT;
 
@@ -13,15 +14,8 @@ export const DB_CONFIG = {
     listPerPage: 15,
 };
 
-function parseMinioUrl(raw: string | undefined) {
-  if (!raw) {
-    console.warn('⚠️  MINIO_URL not configured - using defaults');
-    return {
-      endPoint: 'localhost',
-      port: 9000,
-      useSSL: false,
-    };
-  }
+// MINIO_URL is required and validated at startup (utils/env.ts)
+function parseMinioUrl(raw: string) {
   const withProto = raw.includes('://') ? raw : `https://${raw}`;
   const parsed = new URL(withProto);
   const useSSL = parsed.protocol === 'https:';
@@ -33,8 +27,12 @@ function parseMinioUrl(raw: string | undefined) {
   };
 }
 
+// The one object-storage client for the whole backend (uploads, image proxy, presigned links)
 export const minioClient = new Client({
-  ...parseMinioUrl(process.env.MINIO_URL),
-  accessKey: process.env.MINIO_ACCESS_KEY || 'minioadmin',
-  secretKey: process.env.MINIO_SECRET_KEY || 'minioadmin',
+  ...parseMinioUrl(MINIO_URL),
+  accessKey: MINIO_ACCESS_KEY,
+  secretKey: MINIO_SECRET_KEY,
 });
+
+// The one bucket name for the whole backend
+export const BUCKET_NAME = MINIO_BUCKET_NAME;

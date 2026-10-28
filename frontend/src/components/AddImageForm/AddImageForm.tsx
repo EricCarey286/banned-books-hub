@@ -5,9 +5,10 @@ const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
 
 type ImgFormProps = {
     apiUrl: string;
+    authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 };
 
-const AddImageForm: FC<ImgFormProps> = ({ apiUrl }: ImgFormProps) => {
+const AddImageForm: FC<ImgFormProps> = ({ apiUrl, authFetch }: ImgFormProps) => {
   const fields = [
     {
       name: "isbn",
@@ -41,7 +42,7 @@ const AddImageForm: FC<ImgFormProps> = ({ apiUrl }: ImgFormProps) => {
     formData.append("image", file);
     formData.append("isbn", isbn);
 
-    const res = await fetch(`${URL_PREFIX}://${apiUrl}/book-image/upload`, {
+    const res = await authFetch(`${URL_PREFIX}://${apiUrl}/book-image/upload`, {
       method: "POST",
       body: formData,
     });

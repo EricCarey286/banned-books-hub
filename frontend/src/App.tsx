@@ -10,20 +10,22 @@ import AdminDashboard from './components/AdminDashboard/AdminDashboard';
 import { AdminLoginModal } from './components/AdminLogin/AdminLoginModal';
 import { Navigation } from './components/Navigation';
 import { useScrollToTop } from './hooks/useScrollToTop';
-import { API_URL, URL_PREFIX } from './utils/api';
+import { API_URL, URL_PREFIX, apiFetch, buildUrl } from './utils/api';
 
 import ReactGA from 'react-ga4';
 const TRACKING_ID = "G-SFFY2DBJ1B";
 ReactGA.initialize(TRACKING_ID);
 
+// Older builds stored the admin JWT here. It is removed on load (FR-017).
+const LEGACY_TOKEN_KEY = "authToken";
+
 // Create a component wrapper that has access to routing hooks
 /**
  * Manages the application content and handles user authentication, routing, and API requests.
  *
- * This component manages user authentication status, provides helper functions to handle login,
- * logout, and making authenticated fetch requests, and renders different routes based on the
- * user's authentication state. It also includes public routes for general browsing and protected
- * routes for admin access that require valid authentication.
+ * Admin authentication uses an HTTP-only session cookie set by the API. The page never sees the
+ * session itself. It keeps only the CSRF token (in memory) and the logged-in state, and sends
+ * the CSRF token on writes through `authFetch`.
  *
  * @returns JSX elements representing the application's UI components.
  */
@@ -31,79 +33,55 @@ function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [error, setError] = useState("");
   const [username, setUsername] = useState<string>("");
+  const [csrfToken, setCsrfToken] = useState<string | null>(null);
   const [isAdminLoginModalOpen, setIsAdminLoginModalOpen] = useState(false);
   const navigate = useNavigate();
   useScrollToTop();
 
-  // Helper function to get the auth token
-  /**
-   * Retrieves the authentication token from local storage.
-   */
-  const getAuthToken = () => localStorage.getItem("authToken");
-  
-  // Helper function to get authorization headers
-  const getAuthHeaders = useCallback(() => {
-    const token = localStorage.getItem("authToken");
-    return token ? { Authorization: `Bearer ${token}` } : undefined;
+  const clearSession = useCallback(() => {
+    setIsAuthenticated(false);
+    setUsername("");
+    setCsrfToken(null);
   }, []);
-  
+
   useEffect(() => {
+    localStorage.removeItem(LEGACY_TOKEN_KEY);
+
     if (!API_URL || !URL_PREFIX) {
       console.error('Error: Missing API URL or Prefix.');
       return;
     }
-  
+
     /**
-     * Check and validate user authentication status.
-     *
-     * This function retrieves an authentication token, validates it with the backend,
-     * and updates the authentication state accordingly. If the token is invalid or missing,
-     * it clears the authentication data.
-     *
-     * @returns Promise<void> - The function does not return any value.
+     * Asks the API whether the session cookie is still valid. The cookie is sent automatically.
+     * A valid session returns a fresh CSRF token, so a page reload keeps the admin signed in.
      */
     const checkAuth = async () => {
-      const token = getAuthToken();
-      
-      if (!token) {
-        setIsAuthenticated(false);
-        return;
-      }
-  
       try {
-        // Validate the token with the backend
-        const response = await fetch(`${URL_PREFIX}://${API_URL}/api/admin/validate`, { 
-          method: "GET",
-          headers: getAuthHeaders(),
-        });
-  
+        const response = await apiFetch(buildUrl(API_URL, "/api/admin/validate"), { method: "GET" });
+
         if (response.ok) {
           const data = await response.json();
           setIsAuthenticated(true);
           setUsername(data.user?.username || "");
+          setCsrfToken(data.csrfToken || null);
         } else {
-          // Token is invalid, remove it
-          localStorage.removeItem("authToken");
-          setIsAuthenticated(false);
+          clearSession();
         }
       } catch (error) {
         console.error("Authentication check failed:", error);
-        localStorage.removeItem("authToken");
-        setIsAuthenticated(false);
+        clearSession();
       }
     };
-  
+
     checkAuth();
-  }, [getAuthHeaders]);
+  }, [clearSession]);
 
   /**
    * Handles the login process for admin users.
    *
-   * This function is responsible for submitting a login request to the server,
-   * handling the response, and managing authentication state. It prevents the default
-   * form submission, sends credentials to the server, checks the response for a valid token,
-   * stores the token in localStorage, updates the authentication status, and redirects to
-   * the admin dashboard. If any step fails, it sets an error message.
+   * Submits the credentials. On success the API sets the session cookie and returns a CSRF token,
+   * which is kept in memory, then navigates to the admin dashboard.
    *
    * @param e - The form event object that triggered the login action.
    */
@@ -112,18 +90,18 @@ function AppContent() {
     setError("");
 
     try {
-      const response = await fetch(`${URL_PREFIX}://${API_URL}/api/admin/login`, {
+      const response = await apiFetch(buildUrl(API_URL, "/api/admin/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
       });
 
       const data = await response.json();
 
-      if (response.ok && data.token) {
-        localStorage.setItem("authToken", data.token);
+      if (response.ok && data.csrfToken) {
         setIsAuthenticated(true);
         setUsername(username);
+        setCsrfToken(data.csrfToken);
         navigate("/admin");
       } else {
         setError(data.message || "Login failed");
@@ -135,13 +113,15 @@ function AppContent() {
   };
 
   /**
-   * Handles user logout by removing the auth token from local storage and resetting authentication state.
+   * Ends the admin session on the server (clears the cookie), then resets local state.
    */
-  const handleLogout = () => {
-    // With JWT, we just need to remove the token from localStorage
-    localStorage.removeItem("authToken");
-    setIsAuthenticated(false);
-    setUsername("");
+  const handleLogout = async () => {
+    try {
+      await apiFetch(buildUrl(API_URL, "/api/admin/logout"), { method: "POST" }, csrfToken);
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+    clearSession();
     navigate("/");
   };
 
@@ -149,25 +129,16 @@ function AppContent() {
    * Handles admin login from modal
    */
   const handleAdminLoginSuccess = (token: string) => {
-    localStorage.setItem("authToken", token);
     setIsAuthenticated(true);
+    setCsrfToken(token);
     setIsAdminLoginModalOpen(false);
     navigate("/admin");
   };
 
-  // Function to make authenticated requests
   /**
-   * Fetches data from a specified URL with authorization headers included.
+   * Fetches from the API with the session cookie, and the CSRF token for writes.
    */
-  const authFetch = async (url: string, options: RequestInit = {}) => {
-    const authHeaders = getAuthHeaders();
-    const headers = {
-      ...options.headers,
-      ...(authHeaders ?? {}),
-    };
-  
-    return fetch(url, { ...options, headers });
-  };
+  const authFetch = (url: string, options: RequestInit = {}) => apiFetch(url, options, csrfToken);
 
   return (
     <>
@@ -194,22 +165,22 @@ function AppContent() {
               <FeaturedBook apiUrl={API_URL} />
               <BookList apiUrl={API_URL} />
               <SuggestBookForm apiUrl={API_URL} />
-              <ContactForm apiUrl={API_URL} authFetch={authFetch}/>
+              <ContactForm apiUrl={API_URL} />
             </>
           }
         />
 
       {/* Admin Login Route */}
-      <Route 
-        path="/login" 
+      <Route
+        path="/login"
         element={
-          isAuthenticated ? 
-            <Navigate to="/admin" /> : 
-            <AdminLogin 
-              handleLogin={handleLogin} 
+          isAuthenticated ?
+            <Navigate to="/admin" /> :
+            <AdminLogin
+              handleLogin={handleLogin}
               error={error}
             />
-        } 
+        }
       />
 
         {/* Protected Admin Route */}

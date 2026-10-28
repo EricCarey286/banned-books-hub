@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import Form from "../generic/Form/Form";
+import TurnstileWidget from "../generic/Turnstile/TurnstileWidget";
 
 const URL_PREFIX = import.meta.env.VITE_URL_PREFIX;
 
 interface ContactFormProps {
   apiUrl: string;
-  authFetch: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
 /**
@@ -13,14 +13,16 @@ interface ContactFormProps {
  *
  * This component renders a form with fields for name, email, and message.
  * It validates the input fields to ensure they are filled out correctly,
- * including validating the email format. Upon submission, it sends the form data
- * to the specified API endpoint using the provided `authFetch` function.
+ * including validating the email format. Submission requires a human-verification
+ * token, which is sent with the request and then discarded.
  *
  * @param apiUrl - The base URL of the API where the form data will be sent.
- * @param authFetch - A function used to perform authenticated HTTP requests.
  * @returns A JSX element representing the contact form.
  */
-const ContactForm: React.FC<ContactFormProps> = ({ apiUrl, authFetch }) => {
+const ContactForm: React.FC<ContactFormProps> = ({ apiUrl }) => {
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [widgetKey, setWidgetKey] = useState(0);
+
   const fields = [
     {
       name: "name",
@@ -77,33 +79,43 @@ const ContactForm: React.FC<ContactFormProps> = ({ apiUrl, authFetch }) => {
   };
 
   /**
-   * Handles form submission by sending data to the server via an HTTP POST request.
-   * This function constructs a JSON payload from the input values and sends it to the specified endpoint.
-   * It also handles potential errors during the fetch operation, including network issues and invalid responses.
+   * Handles form submission by sending one entry to the server with a verification token.
+   * Each attempt uses a fresh token, so the widget is reset afterwards.
    *
    * @param values - An object containing key-value pairs of form field names and their respective values.
    */
   const handleSubmit = async (values: Record<string, string>) => {
-    let response;
-    try{
-      response = await authFetch(`${URL_PREFIX}://${apiUrl}/contact_form`, {
+    try {
+      const response = await fetch(`${URL_PREFIX}://${apiUrl}/contact_form`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-Turnstile-Token": turnstileToken ?? "",
         },
         body: JSON.stringify([values]),
       });
-    } catch(err){
-        throw new Error("Invalid action. " + err);
-    }
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to update book.");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to send message.");
+      }
+    } finally {
+      setTurnstileToken(null);
+      setWidgetKey((key) => key + 1);
     }
   };
 
-  return <Form title="Contact Us" fields={fields} initialValues={initialValues} validate={validateForm} onSubmit={handleSubmit} />;
+  return (
+    <Form
+      title="Contact Us"
+      fields={fields}
+      initialValues={initialValues}
+      validate={validateForm}
+      onSubmit={handleSubmit}
+      submitDisabled={!turnstileToken}
+      footer={<TurnstileWidget key={widgetKey} onToken={setTurnstileToken} />}
+    />
+  );
 };
 
 export default ContactForm;

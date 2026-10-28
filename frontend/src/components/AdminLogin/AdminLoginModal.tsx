@@ -4,7 +4,7 @@ import { buildUrl } from '../../utils/api';
 interface AdminLoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLoginSuccess: (token: string) => void;
+  onLoginSuccess: (csrfToken: string) => void;
   apiUrl: string;
 }
 
@@ -25,10 +25,12 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
     setIsLoading(true);
 
     try {
+      // credentials: "include" lets the browser store the HTTP-only admin session cookie from the API subdomain
       const response = await fetch(buildUrl(apiUrl, '/api/admin/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -37,7 +39,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
       }
 
       const data = await response.json();
-      onLoginSuccess(data.token);
+      onLoginSuccess(data.csrfToken);
       setUsername('');
       setPassword('');
     } catch (err) {

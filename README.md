@@ -1,29 +1,34 @@
 # Banned Books Hub
 
-**Banned Books Hub** is a private API designed to document books that have been banned in the United States. This application allows users to view, search, add, update, and delete banned books while providing information about why and where they were banned.
+**Banned Books Hub** documents books that have been banned in the United States: who banned them, when, and why. Visitors can browse and search the list, suggest a book, and send a message. Administrators sign in to add, edit, and delete books, upload cover images, and review suggestions and messages.
 
 ---
 
 ## Features
 
-- **RESTful API**: Access and manage the banned books database via a secure API.
-- **CRUD Operations**:
-  - Create new book entries.
-  - Read and search for books by title, author, or description.
-  - Update existing book details.
-  - Delete books by ID.
-- **MySQL/MariaDB Integration**: Uses stored procedures to optimize database operations.
-- **Pagination Support**: Fetch books in pages to optimize performance.
-- **Optional Updates**: Update only specific fields in a book entry.
+- **Public browsing**: paginated book list, search, and a featured book.
+- **Suggestions and contact**: visitors can suggest a book or send a message. Both require human verification and are rate limited.
+- **Admin area**: sign in, then manage books, cover images, suggested books, and contact submissions.
+- **Secure admin sessions**: the session lives in an HTTP-only cookie, with CSRF protection on every write.
+- **Brute-force protection**: repeated failed logins from one address are blocked for 15 minutes.
+- **Safe uploads**: cover images are checked by their contents, not their declared type.
+- **Startup checks**: the server refuses to run if a required secret or setting is missing or invalid.
 
 ---
 
 ## Tech Stack
 
-- **Backend**: Node.js with Express.js
-- **Database**: MariaDB with stored procedures
-- **ORM/Query Layer**: `mysql2` (promise-based)
-- **Environment Management**: `dotenv` for environment variables
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS v4, React Router
+- **Backend**: Node.js, Express 4, TypeScript
+- **Database**: MariaDB, accessed only through stored procedures (`mysql2`)
+- **Cache and rate limits**: Redis
+- **Image storage**: MinIO (S3-compatible)
+- **Authentication**: JWT in an HTTP-only cookie; bcrypt for the admin password (`bcryptjs`)
+- **Human verification**: Cloudflare Turnstile
+- **Security middleware**: Helmet, CORS, express-rate-limit
+- **Hosting**: Railway, with GitHub Actions for security scanning and database migrations
+
+For how the pieces fit together, see `docs/` and the developer walkthrough.
 
 ---
 
@@ -31,10 +36,12 @@
 
 ### 1. Prerequisites
 
-- Node.js (v18 or higher)
-- MariaDB (v10.5 or higher)
-- npm (or yarn)
-  
+- Node.js 18 or higher
+- MariaDB 10.5 or higher
+- Redis
+- A MinIO server (or an S3-compatible bucket) for cover images
+- npm
+
 ### 2. Clone the Repository
 
 ```bash
@@ -42,75 +49,123 @@ git clone https://github.com/yourusername/banned-books-hub.git
 cd banned-books-hub
 ```
 
-### 3. Install Dependecies
-Run the following command to install the required dependencies:
+### 3. Install Dependencies
 
-```bash 
-npm install
+Install backend and frontend dependencies separately:
+
+```bash
+cd backend && npm install
+cd ../frontend && npm install
 ```
-
-This will install all the dependencies listed in the package.json file, including express, mysql2, dotenv, and others.
 
 ### 4. Environment Configuration
 
-Create a .env file in the root directory of the project. This file will store the environment variables required to run the application.
+Create `backend/.env` from `backend/.env.example` and `frontend/.env` from `frontend/.env.example`. The full list, with values for each environment, is in [`docs/env-vars.md`](docs/env-vars.md).
 
-```env
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=yourpassword
-DB_NAME=db_bannedBooks
-DB_PORT=3306
-PORT=3000
-LIST_PER_PAGE=10
-```
+**Backend** (`backend/.env`) — the server will not start unless the required settings are present and valid. The error message names each problem.
 
-- DB_HOST: The hostname or IP address of your MariaDB server.
-- DB_USER: Your MariaDB username.
-- DB_PASSWORD: Your MariaDB password.
-- DB_NAME: The name of the database (e.g., db_bannedBooks).
-- DB_PORT: The port on which MariaDB is running (default: 3306).
-- PORT: The port for your application to run (default: 3000).
-- LIST_PER_PAGE: The number of records returned per page for paginated endpoints.
+| Variable | Purpose |
+|---|---|
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | MariaDB connection |
+| `PORT` | Port the API listens on (local example: `3001`) |
+| `FRONTEND_URL` | Frontend hostname, without protocol (local example: `localhost:5173`) |
+| `URL_PREFIX` | `http` locally, `https` when deployed |
+| `ADMIN_USERNAME` | Admin username |
+| `ADMIN_PASSWORD_HASH` | bcrypt hash of the admin password (see step 5) |
+| `JWT_SECRET` | Random string of at least 32 characters, unique per environment |
+| `TURNSTILE_SECRET_KEY` | Turnstile secret key. Local testing can use Cloudflare's test secret `1x0000000000000000000000000000000AA` |
+| `MINIO_URL`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY` | MinIO connection (`MINIO_URL` includes the protocol) |
+| `MINIO_BUCKET_NAME` | Bucket that holds the cover images |
+| `REDIS_URL` | Redis connection (for example `redis://localhost:6379`) |
+| `NODE_ENV` | Set to `development` to include error detail in API responses |
 
-Save the .env file in the root directory. This will ensure the application can connect to the database and configure the server correctly.
+**Frontend** (`frontend/.env`)
 
-### 5. Run The Application
+| Variable | Purpose |
+|---|---|
+| `VITE_API_URL` | API host, without protocol (local example: `localhost:3001`) |
+| `VITE_URL_PREFIX` | `http` locally, `https` when deployed |
+| `VITE_TURNSTILE_SITE_KEY` | Public Turnstile site key (local testing can use `1x00000000000000000000AA`) |
 
-Start the server:
+Generate the two secrets like this:
 
 ```bash
-npm run dev
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"   # JWT_SECRET
+cd backend && npm run hash-password                                         # ADMIN_PASSWORD_HASH
 ```
 
-The server will run at http://localhost:3000.
+`npm run hash-password` prompts for the password with input hidden. Passwords must be at least 12 characters. You can also pipe the password in, which keeps it out of shell history:
+
+```bash
+printf '%s' "$ADMIN_PASSWORD" | npm run hash-password
+```
+
+Copy the printed hash (it starts with `$2b$12$`) into `ADMIN_PASSWORD_HASH`. The plain password is never stored.
+
+### 5. Run the Application
+
+Start the backend and the frontend in separate terminals:
+
+```bash
+cd backend && npm run dev     # API at http://localhost:3001
+cd frontend && npm run dev    # site at http://localhost:5173
+```
+
+Make sure MariaDB, Redis, and MinIO are running first. For a fresh database, see the setup guide.
+
+---
+
+## Security
+
+| Area | How it works |
+|---|---|
+| **Secrets** | Passwords and keys live only in environment variables. The admin password is stored as a bcrypt hash. |
+| **Startup checks** | The server refuses to start without a `JWT_SECRET` of at least 32 characters, a valid `ADMIN_PASSWORD_HASH`, and the other required settings. |
+| **Admin session** | Set as an HTTP-only, Secure, `SameSite=Strict` cookie for 24 hours. Page scripts cannot read it. |
+| **CSRF** | Every write to a protected route needs an `X-CSRF-Token` header. The token is returned on login and on session check, and kept in memory only. |
+| **Login limits** | Five failed attempts from one address within 15 minutes block further attempts, including with the correct password. |
+| **Human verification** | The suggest and contact forms require a Cloudflare Turnstile token. |
+| **Submission limits** | Each address may make 10 accepted suggestions or messages per hour, per form. |
+| **Single-entry requests** | The suggest and contact endpoints accept exactly one entry per request. |
+| **Uploads** | Limited to 5 MB. The file's contents must be JPEG, PNG, WebP, or GIF; the declared type is ignored. |
+| **Errors** | Visitors see generic messages for server errors. Full detail is written to the server log. |
+| **Transport and headers** | Helmet sets security headers. CORS allows only the configured frontend origin. Railway terminates TLS. |
+| **Rate limiting** | A global limit of 100 requests per 15 minutes per IP applies to all routes. |
+| **Database** | Queries use parameters and stored procedures only. |
+
+The frontend and API must be served from subdomains of the same domain for the admin cookie to be sent. See [`docs/railway-setup.md`](docs/railway-setup.md) for the custom domain and Turnstile setup.
 
 ---
 
 ## API Documentation
 
-### Base URL
+Base URL (local): `http://localhost:3001`
 
-http://localhost:3000/api/books
+**Public** routes need no login. **Admin** routes need the `admin_session` cookie, which the login response sets. Writes on admin routes also need the `X-CSRF-Token` header. **Verified** routes also need `X-Turnstile-Token`.
 
-### Endpoints
+### Authentication
 
-1. Get All Books
+| Method | Path | Access | Description |
+|---|---|---|---|
+| POST | `/api/admin/login` | Public (rate limited) | Body `{ "username", "password" }`. Sets the session cookie and returns `csrfToken`. |
+| POST | `/api/admin/logout` | Admin | Clears the session cookie. |
+| GET | `/api/admin/validate` | Admin | Confirms the session and returns `csrfToken`. |
+| GET | `/api/admin` | Admin | Welcome message for the admin area. |
 
-- GET /
-- Query Parameters:
-    - page (optional): Page number (default is 1).
+### Books
 
-2. Search for a Book
+| Method | Path | Access | Description |
+|---|---|---|---|
+| GET | `/books?page=N` | Public | Paginated list, 15 per page. |
+| GET | `/books/search?term=...` | Public | Search by title, author, description, and more. |
+| GET | `/books/featured` | Public | The featured book. |
+| POST | `/books` | Admin | Add one or more books. Body is an array of book objects. |
+| PUT | `/books/:id` | Admin | Update a book. |
+| DELETE | `/books/:id` | Admin | Delete a book. |
+| DELETE | `/books` | Admin | Delete several books. Body `{ "ids": [1, 2] }`. |
 
-- GET /search/:term
-- Query Parameters:
-    - term: Search term for title, author, or description, etc.
+Example book object for `POST /books`:
 
-3. Add Book(s)
-
-- POST /
-- Request Body:
 ```json
 [
   {
@@ -124,21 +179,36 @@ http://localhost:3000/api/books
 ]
 ```
 
-4. Update a Book
+### Suggested Books
 
-- POST /:id
-- Request Body:
-```json
-{
-  "title": "Updated Title",
-  "author": "Updated Author",
-  "description": "Updated description"
-}
-```
+| Method | Path | Access | Description |
+|---|---|---|---|
+| POST | `/suggested_books` | Public, verified, limited | Suggest one book. Body is an array with exactly one entry. |
+| GET | `/suggested_books?page=N` | Admin | Review suggestions. |
+| DELETE | `/suggested_books/:id` | Admin | Remove a suggestion. |
+| DELETE | `/suggested_books` | Admin | Remove several suggestions. Body `{ "ids": [...] }`. |
 
-5. Delete a Book
+### Contact Form
 
-- DELETE /:id
+| Method | Path | Access | Description |
+|---|---|---|---|
+| POST | `/contact_form` | Public, verified, limited | Send one message. Body is an array with exactly one entry. |
+| GET | `/contact_form?page=N` | Admin | Read submissions. |
+
+### Images
+
+| Method | Path | Access | Description |
+|---|---|---|---|
+| POST | `/book-image/upload` | Admin | Upload a cover image. Multipart field `image`, optional `isbn`. JPEG, PNG, WebP, or GIF only; 5 MB limit. |
+| GET | `/book-image/:imgName` | Public | Serve a stored image. |
+
+### Health
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/health` | Basic status. |
+| GET | `/health/cache` | Redis connection check. |
+| GET | `/health/cache/stats` | Cache statistics. |
 
 ---
 
@@ -147,7 +217,7 @@ http://localhost:3000/api/books
 | Document | Description |
 |---|---|
 | [`docs/local-setup.md`](docs/local-setup.md) | Step-by-step guide to run the app locally from a fresh clone |
-| [`docs/railway-setup.md`](docs/railway-setup.md) | How to configure Railway development and production environments |
+| [`docs/railway-setup.md`](docs/railway-setup.md) | How to configure Railway development and production environments, custom domains, and Turnstile |
 | [`docs/env-vars.md`](docs/env-vars.md) | Complete environment variable reference — purpose, per-environment values, examples |
 | [`docs/workflow.md`](docs/workflow.md) | Branching workflow, merge policy, and environment promotion checklist |
 

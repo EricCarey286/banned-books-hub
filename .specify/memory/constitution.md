@@ -83,10 +83,12 @@ scaling need is demonstrated and documented.
 All runtime configuration MUST be injected via environment variables — no production values
 may be embedded in source.
 
-- Backend: `DB_*`, `PORT`, `JWT_SECRET`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`,
-  `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`, `MINIO_ENDPOINT`, `FRONTEND_URL`, `URL_PREFIX`,
-  `RAILWAY_PUBLIC_DOMAIN`.
-- Frontend: `VITE_API_URL`, `VITE_URL_PREFIX`.
+- Backend: `DB_*`, `PORT`, `JWT_SECRET`, `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH`,
+  `TURNSTILE_SECRET_KEY`, `MINIO_URL`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`,
+  `MINIO_BUCKET_NAME`, `FRONTEND_URL`, `URL_PREFIX`, `REDIS_URL`, `NODE_ENV`,
+  `RAILWAY_PUBLIC_DOMAIN`. The backend MUST refuse to start when a required setting is
+  missing or invalid (`backend/src/utils/env.ts`).
+- Frontend: `VITE_API_URL`, `VITE_URL_PREFIX`, `VITE_TURNSTILE_SITE_KEY`.
 - `dotenv` initialization MUST occur exactly once, at the application entry point
   (`backend/src/app.ts`). Repeated `require('dotenv').config()` calls in sub-modules are
   not permitted.
@@ -142,4 +144,4 @@ All feature plans and code reviews MUST include a "Constitution Check" confirmin
 with the five core principles. Violations require explicit justification in the plan's
 Complexity Tracking table.
 
-**Version**: 1.0.0 | **Ratified**: 2026-06-24 | **Last Amended**: 2026-06-24
+**Version**: 1.1.0 | **Ratified**: 2026-06-24 | **Last Amended**: 2026-10-28

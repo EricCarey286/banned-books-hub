@@ -138,7 +138,7 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
     formData.append("image", file);
     formData.append("isbn", isbn);
 
-    const res = await fetch(`${URL_PREFIX}://${apiUrl}/book-image/upload`, {
+    const res = await authFetch(`${URL_PREFIX}://${apiUrl}/book-image/upload`, {
       method: "POST",
       body: formData,
     });
@@ -178,7 +178,7 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
         }
         break;
       case "delete":
-        response = await fetch(`${URL_PREFIX}://${apiUrl}/books/${values.id}`, {
+        response = await authFetch(`${URL_PREFIX}://${apiUrl}/books/${values.id}`, {
           method: "DELETE",
         });
 
@@ -189,7 +189,7 @@ const AddBookForm: React.FC<AddBookFormProps> = ({ apiUrl, authFetch }) => {
         }
         break;
       case "update":
-        response = await fetch(`${URL_PREFIX}://${apiUrl}/books/${values.isbn}`, {
+        response = await authFetch(`${URL_PREFIX}://${apiUrl}/books/${values.isbn}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
