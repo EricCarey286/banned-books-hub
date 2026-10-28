@@ -40,6 +40,16 @@ Determine the branch numbering strategy by checking configuration in this order:
 3. Check `.specify/init-options.json` for `branch_numbering` value (deprecated, backward compatibility — will be removed in a future release)
 4. Default to `sequential` if none of the above exist
 
+## Branch Type
+
+Choose the branch prefix from the purpose of the change:
+
+- `feat` — new features and new capabilities (default)
+- `fix` — bug fixes and security fixes
+- `clean` — house cleaning and organizational changes (removing unused code, dependencies, or config; reorganizing files; updating docs without behavior change)
+
+Pass the choice to the script with `--type`. The branch is named `<type>_<short-name>`, for example `fix_security-remediation`.
+
 ## Execution
 
 Generate a concise short name (2-4 words) for the branch:
@@ -49,7 +59,7 @@ Generate a concise short name (2-4 words) for the branch:
 
 Run the appropriate script based on your platform:
 
-- **Bash**: `.specify/extensions/git/scripts/bash/create-new-feature-branch.sh --json --short-name "<short-name>" "<feature description>"`
+- **Bash**: `.specify/extensions/git/scripts/bash/create-new-feature-branch.sh --json --type <feat|fix|clean> --short-name "<short-name>" "<feature description>"`
 - **Bash (timestamp)**: `.specify/extensions/git/scripts/bash/create-new-feature-branch.sh --json --timestamp --short-name "<short-name>" "<feature description>"`
 - **PowerShell**: `.specify/extensions/git/scripts/powershell/create-new-feature-branch.ps1 -Json -ShortName "<short-name>" "<feature description>"`
 - **PowerShell (timestamp)**: `.specify/extensions/git/scripts/powershell/create-new-feature-branch.ps1 -Json -Timestamp -ShortName "<short-name>" "<feature description>"`

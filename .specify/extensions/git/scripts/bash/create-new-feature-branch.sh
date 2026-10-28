@@ -12,7 +12,7 @@ DRY_RUN=false
 ALLOW_EXISTING=false
 SHORT_NAME=""
 BRANCH_NUMBER=""
-BRANCH_PREFIX_FEAT="feat_"
+BRANCH_TYPE="feat"
 USE_TIMESTAMP=false
 ARGS=()
 i=1
@@ -57,6 +57,23 @@ while [ $i -le $# ]; do
                 echo 'Error: --number must be a non-negative integer' >&2
                 exit 1
             fi
+            ;;
+        --type)
+            if [ $((i + 1)) -gt $# ]; then
+                echo 'Error: --type requires a value (feat, fix, or clean)' >&2
+                exit 1
+            fi
+            i=$((i + 1))
+            next_arg="${!i}"
+            case "$next_arg" in
+                feat|fix|clean)
+                    BRANCH_TYPE="$next_arg"
+                    ;;
+                *)
+                    echo "Error: --type must be one of feat, fix, clean (got '$next_arg')" >&2
+                    exit 1
+                    ;;
+            esac
             ;;
         --timestamp)
             USE_TIMESTAMP=true
@@ -363,9 +380,9 @@ else
         fi
 
         FEATURE_NUM=$(printf "%03d" "$((10#$BRANCH_NUMBER))")
-        # Project override: branches are named feat_<short-name>, without a number.
+        # Project override: branches are named <type>_<short-name>, without a number.
         # The spec directory keeps its numbered name under specs/.
-        BRANCH_NAME="${BRANCH_PREFIX_FEAT}${BRANCH_SUFFIX}"
+        BRANCH_NAME="${BRANCH_TYPE}_${BRANCH_SUFFIX}"
     fi
 fi
 
@@ -377,14 +394,14 @@ if [ -n "${GIT_BRANCH_NAME:-}" ] && [ "$BRANCH_BYTE_LEN" -gt $MAX_BRANCH_LENGTH 
     >&2 echo "Error: GIT_BRANCH_NAME must be 244 bytes or fewer in UTF-8. Provided value is ${BRANCH_BYTE_LEN} bytes."
     exit 1
 elif [ "$BRANCH_BYTE_LEN" -gt $MAX_BRANCH_LENGTH ]; then
-    PREFIX_LENGTH=${#BRANCH_PREFIX_FEAT}
+    PREFIX_LENGTH=$(( ${#BRANCH_TYPE} + 1 ))
     MAX_SUFFIX_LENGTH=$((MAX_BRANCH_LENGTH - PREFIX_LENGTH))
 
     TRUNCATED_SUFFIX=$(echo "$BRANCH_SUFFIX" | cut -c1-$MAX_SUFFIX_LENGTH)
     TRUNCATED_SUFFIX=$(echo "$TRUNCATED_SUFFIX" | sed 's/-$//')
 
     ORIGINAL_BRANCH_NAME="$BRANCH_NAME"
-    BRANCH_NAME="${BRANCH_PREFIX_FEAT}${TRUNCATED_SUFFIX}"
+    BRANCH_NAME="${BRANCH_TYPE}_${TRUNCATED_SUFFIX}"
 
     >&2 echo "[specify] Warning: Branch name exceeded GitHub's 244-byte limit"
     >&2 echo "[specify] Original: $ORIGINAL_BRANCH_NAME (${#ORIGINAL_BRANCH_NAME} bytes)"
